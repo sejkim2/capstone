@@ -13,6 +13,11 @@ java {
 	}
 }
 
+jar {
+    archiveBaseName = 'app'
+    archiveVersion = '0.0.1-SNAPSHOT'
+}
+
 configurations {
 	compileOnly {
 		extendsFrom annotationProcessor

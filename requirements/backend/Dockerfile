@@ -10,6 +10,7 @@ WORKDIR /app
 
 # .jar 파일을 명시적으로 경로를 지정하여 복사
 # build.gradle에서 앱 이름 지정 가능 (default : 프로젝트 디렉토리명)
-COPY --from=builder /app/build/libs/app-0.0.1-SNAPSHOT.jar /app/app.jar 
+# 유연하게 JAR 복사 (이름에 의존하지 않음)
+COPY --from=builder /app/build/libs/*.jar app.jar
 
 ENTRYPOINT ["java", "-jar", "app.jar"]

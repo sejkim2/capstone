@@ -1,6 +1,16 @@
 services:
+  frontend:
+    build: requirements/frontend
+    container_name: frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - capstone_network
+
   backend:
-    build: requiredments/backend
+    build: requirements/backend
     container_name: backend
     depends_on:
       - database
