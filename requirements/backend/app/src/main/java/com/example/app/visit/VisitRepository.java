@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface VisitRepository extends JpaRepository<Visit, Long> {
@@ -22,4 +23,6 @@ public interface VisitRepository extends JpaRepository<Visit, Long> {
 
     // 특정 차량이 특정 CCTV에 방문한 기록
     List<Visit> findByCctvAndVehicle(Cctv cctv, Vehicle vehicle);
+
+    Optional<Visit> findTopByVehicleOrderByEntryTimeDesc(Vehicle vehicle);
 }

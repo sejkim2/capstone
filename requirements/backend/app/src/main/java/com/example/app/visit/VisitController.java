@@ -1,5 +1,6 @@
 package com.example.app.visit;
 
+import com.example.app.visit.dto.VisitRequestDto;
 import com.example.app.visit.dto.VisitResponseDto;
 import com.example.app.visit.dto.VisitRevisitResponseDto;
 
@@ -21,6 +22,12 @@ import java.util.Map;
 public class VisitController {
 
     private final VisitService visitService;
+
+    @PostMapping
+    public ResponseEntity<?> handleVisit(@RequestBody VisitRequestDto visitRequestDto) {
+        visitService.processVisit(visitRequestDto);
+        return ResponseEntity.ok().build();
+    }
 
     @GetMapping
     public ResponseEntity<Map<String, Object>> getVisits(
