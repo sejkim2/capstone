@@ -1,5 +1,7 @@
 package com.example.app.personRecognition.dto;
 
+import java.time.LocalDateTime;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -7,7 +9,7 @@ import lombok.Setter;
 @Setter
 public class PersonRecognitionRequestDto {
     private Long cctvId;
-    private String timestamp;
+    private LocalDateTime timestamp;
     private String direction;
     private String gender;
     private String ageGroup;
