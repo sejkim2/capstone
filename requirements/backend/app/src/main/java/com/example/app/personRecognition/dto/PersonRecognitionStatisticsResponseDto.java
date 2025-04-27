@@ -10,5 +10,5 @@ import lombok.Setter;
 public class PersonRecognitionStatisticsResponseDto {
     private String gender;
     private String ageGroup;
-    private long inCount;
+    private long count;
 }

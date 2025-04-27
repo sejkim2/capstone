@@ -27,6 +27,9 @@ public class PersonRecognition {
     private LocalDateTime recognizedAt;
 
     @Column(nullable = false)
+    private String direction; // "in" or "out"
+
+    @Column(nullable = false)
     private String gender;
 
     @Column(name = "age_group", nullable = false)
