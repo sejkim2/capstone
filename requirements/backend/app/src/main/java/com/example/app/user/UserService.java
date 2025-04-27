@@ -1,19 +1,17 @@
 package com.example.app.user;
 
-import com.example.app.user.User;
 import com.example.app.user.dto.UserLoginRequestDto;
 import com.example.app.user.dto.UserResponseDto;
-import com.example.app.user.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     // signup
     public UserResponseDto registerUser(String email, String password, String name) {
@@ -21,9 +19,12 @@ public class UserService {
             throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
         }
 
+        // 암호화!
+        String encodedPassword = passwordEncoder.encode(password);
+
         User user = User.builder()
                 .email(email)
-                .password(password)  // 추후 암호화 필요
+                .password(encodedPassword)  // 저장은 암호화된 비밀번호로
                 .name(name)
                 .build();
 
@@ -36,14 +37,15 @@ public class UserService {
         User user = userRepository.findByEmail(requestDto.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 이메일입니다."));
 
-        if (!user.getPassword().equals(requestDto.getPassword())) {
+        // 비밀번호 비교: 평문 vs 암호화된 비밀번호
+        if (!passwordEncoder.matches(requestDto.getPassword(), user.getPassword())) {
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
 
         return UserResponseDto.of(user);
     }
 
-    // check dupulicate email
+    // check duplicate email
     public boolean isEmailDuplicate(String email) {
         return userRepository.existsByEmail(email);
     }
