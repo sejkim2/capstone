@@ -1,5 +1,6 @@
 package com.example.app.personRecognition;
 
+import com.example.app.cctv.Cctv;
 import com.example.app.personRecognition.dto.PersonRecognitionStatisticsResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,18 @@ import java.util.stream.Collectors;
 public class PersonRecognitionService {
 
     private final PersonRecognitionRepository personRecognitionRepository;
+
+    public void saveRecognition(Cctv cctv, LocalDateTime recognizedAt, String direction, String gender, String ageGroup) {
+        PersonRecognition recognition = PersonRecognition.builder()
+                .cctv(cctv)
+                .recognizedAt(recognizedAt)
+                .direction(direction)
+                .gender(gender)
+                .ageGroup(ageGroup)
+                .build();
+
+        personRecognitionRepository.save(recognition);
+    }
 
     // 성별/연령 통계 조회
     public List<PersonRecognitionStatisticsResponseDto> getStatistics(Long cctvId, LocalDateTime startDateTime, LocalDateTime endDateTime) {

@@ -1,5 +1,8 @@
 package com.example.app.personRecognition;
 
+import com.example.app.cctv.Cctv;
+import com.example.app.cctv.CctvRepository;
+import com.example.app.personRecognition.dto.PersonRecognitionRequestDto;
 import com.example.app.personRecognition.dto.PersonRecognitionStatisticsResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -19,6 +22,26 @@ import java.util.Map;
 public class PersonRecognitionController {
 
     private final PersonRecognitionService personRecognitionService;
+    private final CctvRepository cctvRepository;
+
+    @PostMapping("/recognition")
+    public ResponseEntity<String> receivePersonRecognition(@RequestBody PersonRecognitionRequestDto request) {
+
+        // 1. cctvId로 CCTV 찾기
+        Cctv cctv = cctvRepository.findById(request.getCctvId())
+                .orElseThrow(() -> new IllegalArgumentException("해당 CCTV를 찾을 수 없습니다."));
+
+        // 2. 서비스로 넘겨 저장
+        personRecognitionService.saveRecognition(
+                cctv,
+                LocalDateTime.parse(request.getTimestamp()),
+                request.getDirection(),
+                request.getGender(),
+                request.getAgeGroup()
+        );
+
+        return ResponseEntity.ok("사람 인식 데이터 저장 성공");
+    }
 
     // 성별/연령 통계 조회
     @GetMapping("/statistics")
