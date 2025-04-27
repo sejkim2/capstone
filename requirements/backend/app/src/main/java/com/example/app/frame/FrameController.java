@@ -18,7 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FrameController {
 
-    private final String saveDir = "/home/ubuntu/frames";  // 저장 경로
+    private final String saveDir = "/frames"; 
 
     @PostMapping
     public ResponseEntity<String> uploadFrame(@RequestBody FrameRequestDto requestDto) throws IOException {
