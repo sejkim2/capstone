@@ -6,12 +6,13 @@ import org.springframework.stereotype.Component;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.util.UUID;
 
 @Component
 public class FrameWebSocketHandler extends BinaryWebSocketHandler {
+
+    private static final String FRAME_SAVE_DIR = "/frames";
 
     @Override
     public void handleBinaryMessage(WebSocketSession session, BinaryMessage message) throws Exception {
@@ -30,16 +31,20 @@ public class FrameWebSocketHandler extends BinaryWebSocketHandler {
         }
     }
 
+    @Override
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+        System.out.println("WebSocket 연결 종료: " + session.getId() + ", 이유: " + status);
+    }
+
     private void saveImage(BufferedImage img) {
         try {
-            // 경로를 /frames로 고정
-            File directory = new File("/frames");
+            File directory = new File(FRAME_SAVE_DIR);
             if (!directory.exists()) {
-                directory.mkdirs(); // 혹시 없으면 생성
+                directory.mkdirs(); // 폴더가 없으면 생성
             }
 
-            // 파일명 규칙 설정: 현재 시간 기반
-            String filename = "/frames/frame_" + System.currentTimeMillis() + ".jpg";
+            // 파일명에 UUID 추가
+            String filename = FRAME_SAVE_DIR + "/frame_" + System.currentTimeMillis() + "_" + UUID.randomUUID() + ".jpg";
             File outputfile = new File(filename);
 
             ImageIO.write(img, "jpg", outputfile);
