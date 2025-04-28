@@ -26,11 +26,11 @@ public class UserController {
         return ResponseEntity.ok(responseDto);  //userid, email, name
     }
 
-    //login : email, password
+    // login : email, password
     @PostMapping("/login")
-    public ResponseEntity<UserResponseDto> login(@RequestBody UserLoginRequestDto requestDto) {
-        UserResponseDto responseDto = userService.login(requestDto);
-        return ResponseEntity.ok(responseDto);
+    public ResponseEntity<String> login(@RequestBody UserLoginRequestDto requestDto) {
+        String token = userService.login(requestDto);
+        return ResponseEntity.ok(token);
     }
 
     //check dupulicate email
