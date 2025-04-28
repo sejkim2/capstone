@@ -17,13 +17,13 @@ public class FrameWebSocketHandler extends BinaryWebSocketHandler {
     public void handleBinaryMessage(WebSocketSession session, BinaryMessage message) throws Exception {
         byte[] imageBytes = message.getPayload().array();
 
+        System.out.println("WebSocket에서 바이트 수신! size = " + imageBytes.length + " bytes");
+
         ByteArrayInputStream bis = new ByteArrayInputStream(imageBytes);
         BufferedImage img = ImageIO.read(bis);
 
         if (img != null) {
             System.out.println("Received image: width=" + img.getWidth() + ", height=" + img.getHeight());
-
-            // /frames에 저장
             saveImage(img);
         } else {
             System.out.println("Failed to decode image.");
