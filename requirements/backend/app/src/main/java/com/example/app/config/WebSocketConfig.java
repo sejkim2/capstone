@@ -17,6 +17,6 @@ public class WebSocketConfig implements WebSocketConfigurer {
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry.addHandler(frameWebSocketHandler, "/ws/frame")
-                .setAllowedOrigins("*"); // 테스트할 때 모든 Origin 허용
+                .setAllowedOrigins("*");
     }
 }

@@ -23,7 +23,7 @@ public class FrameWebSocketHandler extends BinaryWebSocketHandler {
         if (img != null) {
             System.out.println("Received image: width=" + img.getWidth() + ", height=" + img.getHeight());
 
-            // ✅ 여기서 /frames에 저장
+            // /frames에 저장
             saveImage(img);
         } else {
             System.out.println("Failed to decode image.");
@@ -32,7 +32,7 @@ public class FrameWebSocketHandler extends BinaryWebSocketHandler {
 
     private void saveImage(BufferedImage img) {
         try {
-            // ✅ 경로를 /frames로 고정
+            // 경로를 /frames로 고정
             File directory = new File("/frames");
             if (!directory.exists()) {
                 directory.mkdirs(); // 혹시 없으면 생성
