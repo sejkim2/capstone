@@ -8,11 +8,16 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Component
 public class FrameWebSocketHandler extends BinaryWebSocketHandler {
 
     private static final String FRAME_SAVE_DIR = "/frames";
+
+    // 저장을 비동기로 처리할 스레드 풀 (2개 쓰레드 사용)
+    private final ExecutorService executor = Executors.newFixedThreadPool(2);
 
     @Override
     public void handleBinaryMessage(WebSocketSession session, BinaryMessage message) throws Exception {
@@ -25,7 +30,7 @@ public class FrameWebSocketHandler extends BinaryWebSocketHandler {
 
         if (img != null) {
             System.out.println("Received image: width=" + img.getWidth() + ", height=" + img.getHeight());
-            saveImage(img);
+            saveImageAsync(img);
         } else {
             System.out.println("Failed to decode image.");
         }
@@ -36,21 +41,22 @@ public class FrameWebSocketHandler extends BinaryWebSocketHandler {
         System.out.println("WebSocket 연결 종료: " + session.getId() + ", 이유: " + status);
     }
 
-    private void saveImage(BufferedImage img) {
-        try {
-            File directory = new File(FRAME_SAVE_DIR);
-            if (!directory.exists()) {
-                directory.mkdirs(); // 폴더가 없으면 생성
+    private void saveImageAsync(BufferedImage img) {
+        executor.submit(() -> {
+            try {
+                File directory = new File(FRAME_SAVE_DIR);
+                if (!directory.exists()) {
+                    directory.mkdirs(); // 디렉토리가 없으면 생성
+                }
+
+                String filename = FRAME_SAVE_DIR + "/frame_" + System.currentTimeMillis() + "_" + UUID.randomUUID() + ".jpg";
+                File outputfile = new File(filename);
+
+                ImageIO.write(img, "jpg", outputfile);
+                System.out.println("Saved image: " + outputfile.getAbsolutePath());
+            } catch (IOException e) {
+                System.out.println("Failed to save image: " + e.getMessage());
             }
-
-            // 파일명에 UUID 추가
-            String filename = FRAME_SAVE_DIR + "/frame_" + System.currentTimeMillis() + "_" + UUID.randomUUID() + ".jpg";
-            File outputfile = new File(filename);
-
-            ImageIO.write(img, "jpg", outputfile);
-            System.out.println("Saved image: " + outputfile.getAbsolutePath());
-        } catch (IOException e) {
-            System.out.println("Failed to save image: " + e.getMessage());
-        }
+        });
     }
 }
