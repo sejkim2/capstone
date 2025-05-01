@@ -1,0 +1,1 @@
+export { SizeLg } from "./SizeLg";
