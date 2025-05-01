@@ -31,10 +31,10 @@ public class PersonRecognitionController {
         Cctv cctv = cctvRepository.findById(request.getCctvId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 CCTV를 찾을 수 없습니다."));
 
-        // 2. 서비스로 넘겨 저장
+        // 2. 서비스로 넘겨 저장 (parse 필요 없음)
         personRecognitionService.saveRecognition(
                 cctv,
-                LocalDateTime.parse(request.getTimestamp()),
+                request.getTimestamp(),
                 request.getDirection(),
                 request.getGender(),
                 request.getAgeGroup()
