@@ -9,6 +9,7 @@ import VisitorSummaryPage from "./screens/StatisticsPage1";  // VisitorSummaryPa
 import StatisticsPage2 from "./screens/StatisticsPage2";  // 두 번째 페이지
 import StatisticsPage3 from "./screens/StatisticsPage3";  // 세 번째 페이지
 import StatisticsPage4 from "./screens/StatisticsPage4";  // 네 번째 페이지
+import CreateaccountPage from "./screens/CreateaccountPage";
 
 createRoot(document.getElementById("app")).render(
   <React.StrictMode>
@@ -21,6 +22,8 @@ createRoot(document.getElementById("app")).render(
         <Route path="/statistics-page-2" element={<StatisticsPage2 />} />
         <Route path="/statistics-page-3" element={<StatisticsPage3 />} />
         <Route path="/statistics-page-4" element={<StatisticsPage4 />} />
+        <Route path="/signup" element={<CreateaccountPage />} />
+        <Route path="/login" element={<LoginPage />} />
       </Routes>
     </BrowserRouter>
   </React.StrictMode>
