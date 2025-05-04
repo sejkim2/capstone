@@ -30,7 +30,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .cors()  // ✅ CORS 허용
+            .cors()
             .and()
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
@@ -42,17 +42,19 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // ✅ CORS 설정 추가
+
     @Bean
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowCredentials(true); // 쿠키 허용 여부
-        config.setAllowedOriginPatterns(List.of("*")); // 프론트 주소만 제한하고 싶다면 여기에 명시
-        config.setAllowedHeaders(List.of("*"));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")); // OPTIONS 허용!
+
+        config.setAllowedOriginPatterns(List.of("http://localhost")); // 프론트 주소만 허용
+        config.setAllowCredentials(true); // 쿠키/Authorization 허용
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
+        source.registerCorsConfiguration("/**", config); // 모든 경로에 적용
+
 
         return new CorsFilter(source);
     }

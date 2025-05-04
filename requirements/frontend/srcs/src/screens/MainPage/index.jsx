@@ -1,5 +1,5 @@
 // src/screens/MainPage/index.jsx
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { VectorStroke } from "../../components/VectorStroke";
 import { IconOutlineShoppingCart1 } from "../../icons/IconOutlineShoppingCart1";
@@ -12,12 +12,39 @@ export const Screen = () => {
   const isMain = location.pathname === "/main";
   const isCCTV = location.pathname === "/cctv";
 
+  const [userInfo, setUserInfo] = useState(null);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await fetch("/api/users/me", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("인증 실패 또는 토큰 만료");
+        }
+
+        const data = await response.text();
+        setUserInfo(data);
+      } catch (error) {
+        console.error("사용자 정보 로딩 실패:", error);
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
   const handleSignOut = () => {
+    localStorage.removeItem("token");
     navigate("/");
   };
 
   const handleVisitorSummaryClick = () => {
-    navigate("/visitor-summary"); // 방문객 수 통계 페이지로 이동
+    navigate("/visitor-summary");
   };
 
   return (
@@ -92,7 +119,7 @@ export const Screen = () => {
 
             <div className="todays-sales">
               <div className="today-sales">
-              <div className="element" onClick={() => navigate("/statistics-page-3")} style={{ cursor: "pointer" }}>
+                <div className="element" onClick={() => navigate("/statistics-page-3")} style={{ cursor: "pointer" }}>
                   <div className="overlap-2">
                     <div className="text-wrapper-5">Click to View Summary</div>
                     <div className="text-wrapper-6">고객 분포</div>
@@ -154,7 +181,6 @@ export const Screen = () => {
                       </div>
                     </div>
                   </div>
-
                 </div>
 
                 <div className="overlap-6">
