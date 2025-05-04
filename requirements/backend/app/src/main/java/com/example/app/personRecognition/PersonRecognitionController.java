@@ -2,6 +2,7 @@ package com.example.app.personRecognition;
 
 import com.example.app.cctv.Cctv;
 import com.example.app.cctv.CctvRepository;
+import com.example.app.personRecognition.dto.PersonInoutRecordDto;
 import com.example.app.personRecognition.dto.PersonRecognitionRequestDto;
 import com.example.app.personRecognition.dto.PersonRecognitionStatisticsResponseDto;
 import lombok.RequiredArgsConstructor;
@@ -86,5 +87,20 @@ public class PersonRecognitionController {
         response.put("message", "입출 통계를 성공적으로 반환했습니다.");
 
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/records")
+    public ResponseEntity<List<PersonInoutRecordDto>> getPersonRecords(
+            @RequestParam Long cctvId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime startTime,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime endTime) {
+        LocalDateTime startDateTime = LocalDateTime.of(startDate, startTime);
+        LocalDateTime endDateTime = LocalDateTime.of(endDate, endTime);
+
+        List<PersonInoutRecordDto> records = personRecognitionService.getRawRecognitionRecords(cctvId, startDateTime,
+                endDateTime);
+        return ResponseEntity.ok(records);
     }
 }
