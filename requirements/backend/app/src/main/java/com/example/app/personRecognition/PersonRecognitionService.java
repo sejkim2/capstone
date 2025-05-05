@@ -1,6 +1,7 @@
 package com.example.app.personRecognition;
 
 import com.example.app.cctv.Cctv;
+import com.example.app.personRecognition.dto.PersonInoutRecordDto;
 import com.example.app.personRecognition.dto.PersonRecognitionStatisticsResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -61,4 +62,16 @@ public class PersonRecognitionService {
 
         return result;
     }
+
+    public List<PersonInoutRecordDto> getRawRecognitionRecords(Long cctvId, LocalDateTime start, LocalDateTime end) {
+    return personRecognitionRepository.findByCctv_CctvIdAndRecognizedAtBetween(cctvId, start, end).stream()
+            .map(r -> PersonInoutRecordDto.builder()
+                    .cctvId(r.getCctv().getCctvId())
+                    .timestamp(r.getRecognizedAt())
+                    .direction(r.getDirection())
+                    .gender(r.getGender())
+                    .ageGroup(r.getAgeGroup())
+                    .build())
+            .collect(Collectors.toList());
+}
 }
