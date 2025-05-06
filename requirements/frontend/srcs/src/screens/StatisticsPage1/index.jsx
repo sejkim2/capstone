@@ -1,14 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Bar } from "react-chartjs-2";
 import { IconOutlineShoppingCart1 } from "../../icons/IconOutlineShoppingCart1";
 import "../MainPage/style.css";
-import  {mockVisitorData}  from "../../data/mockVisitorData";
-import {
-  defaultInOutData,
-  defaultWeekdayChartData,
-  defaultHourlyChartData
-} from "../../data/defaultChartData";
+
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -26,77 +21,197 @@ const VisitorSummaryPage = () => {
   const location = useLocation();
   const isCCTV = location.pathname === "/cctv";
 
+  const today = new Date();
+  const thirtyDaysAgo = new Date(today);
+  thirtyDaysAgo.setDate(today.getDate() - 30);
+
+  const [startDate, setStartDate] = useState(thirtyDaysAgo.toISOString().split("T")[0]);
+  const [endDate, setEndDate] = useState(today.toISOString().split("T")[0]);
+  const [startTime, setStartTime] = useState("00:00");
+  const [endTime, setEndTime] = useState("23:59");
+  const [selectedCCTV, setSelectedCCTV] = useState("CCTV1");
+
+  const [showDefaultCharts, setShowDefaultCharts] = useState(true);
+  const [monthlyChartData, setMonthlyChartData] = useState(null);
+  const [inOutChartData, setInOutChartData] = useState(null);
   const [weekdayChartData, setWeekdayChartData] = useState(null);
   const [hourlyChartData, setHourlyChartData] = useState(null);
 
-  const [startDate, setStartDate] = useState("2025-04-01");
-  const [endDate, setEndDate] = useState("2025-04-05");
-  const [startTime, setStartTime] = useState("08:00");
-  const [endTime, setEndTime] = useState("18:00");
-
-  const [selectedCCTV, setSelectedCCTV] = useState("CCTV1");
-  const [showDefaultCharts, setShowDefaultCharts] = useState(true);
-
-  const handleDateTimeChange = () => {
-    const start = new Date(`${startDate}T${startTime}`);
-    const end = new Date(`${endDate}T${endTime}`);
-
-    const filtered = mockVisitorData.filter(({ timestamp }) => {
-      const ts = new Date(timestamp);
-      return ts >= start && ts <= end;
+  const fetchAndSetDefaultCharts = async () => {
+    const token = localStorage.getItem("token");
+    const cctvId = selectedCCTV.replace("CCTV", "");
+    const params = new URLSearchParams({
+      startDate,
+      endDate,
+      startTime: "00:00",
+      endTime: "23:59",
+      cctvId
     });
+
+    const res = await fetch(`http://localhost:8080/api/person/records?${params}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+    console.log("📦 받은 데이터:", data);
+
+    const getDateRange = (start, end) => {
+      const result = [];
+      const cur = new Date(start);
+      const last = new Date(end);
+    
+      while (cur <= last) {
+        result.push(cur.toISOString().split("T")[0]);
+        cur.setDate(cur.getDate() + 1);
+      }
+      return result;
+    };
+    
+    const dateRange = getDateRange(startDate, endDate);
+    
+    const dailyCounts = {};
+    data.filter(d => d.direction === "in").forEach(({ timestamp }) => {
+      const dateKey = new Date(timestamp).toISOString().split("T")[0];
+      dailyCounts[dateKey] = (dailyCounts[dateKey] || 0) + 1;
+    });
+    
+    const dailyData = dateRange.map(date => dailyCounts[date] || 0);
+    
+    setMonthlyChartData({
+      labels: dateRange,
+      datasets: [{
+        label: "일별 방문자 수",
+        data: dailyData,
+        backgroundColor: "#5D5FEF",
+      }],
+    });
+
+    const inPerHour = Array(24).fill(0);
+    const outPerHour = Array(24).fill(0);
+    
+    data.forEach(({ timestamp, direction }) => {
+      if (direction === "in") {
+        const date = new Date(timestamp);
+        const day = date.getDay(); // 0~6
+        const hour = date.getHours(); // 0~23
+    
+        weekdays[day]++;
+        weekdaySums[day]++;
+    
+        hours[hour]++;
+        hourSums[hour]++;
+      }
+    });
+
+    setInOutChartData({
+      labels: Array.from({ length: 24 }, (_, i) => `${i}시`),
+      datasets: [
+        {
+          label: "입장",
+          data: inPerHour,
+          backgroundColor: "#5D5FEF",
+        },
+        {
+          label: "퇴장",
+          data: outPerHour.map(v => -v),
+          backgroundColor: "#FF8F8F",
+        },
+      ],
+    });
+
+  };
+
+  const handleDateTimeChange = async () => {
+    const token = localStorage.getItem("token");
+    const params = new URLSearchParams({
+      startDate,
+      endDate,
+      startTime,
+      endTime,
+      cctvId: selectedCCTV.replace("CCTV", "")
+    });
+
+    const res = await fetch(`http://localhost:8080/api/person/records?${params}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
 
     const weekdays = Array(7).fill(0);
     const weekdaySums = Array(7).fill(0);
-    filtered.forEach(({ timestamp, count }) => {
-      const day = new Date(timestamp).getDay();
-      weekdays[day]++;
-      weekdaySums[day] += count;
+    const hours = Array(24).fill(0);
+    const hourSums = Array(24).fill(0);
+
+    const todayStr = new Date().toISOString().split("T")[0];
+
+    data.forEach(({ timestamp, direction }) => {
+      const date = new Date(timestamp);
+      const dateStr = date.toISOString().split("T")[0];
+      const hour = date.getHours();
+
+      if (dateStr === todayStr) {
+        if (direction === "in") {
+          inPerHour[hour]++;
+        } else if (direction === "out") {
+          outPerHour[hour]++;
+        }
+      }
     });
 
-    const weekdayAvg = weekdaySums.map((sum, i) =>
-      weekdays[i] ? sum / weekdays[i] : 0
-    );
     setWeekdayChartData({
       labels: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
       datasets: [{
         label: "요일별 평균 방문자 수",
-        data: weekdayAvg,
+        data: weekdaySums,
         backgroundColor: "#5D5FEF",
       }],
     });
 
-    const hours = Array(24).fill(0);
-    const hourSums = Array(24).fill(0);
-    filtered.forEach(({ timestamp, count }) => {
-      const hour = new Date(timestamp).getHours();
-      hours[hour]++;
-      hourSums[hour] += count;
-    });
-
-    const hourAvg = hourSums.map((sum, i) =>
-      hours[i] ? sum / hours[i] : 0
-    );
     setHourlyChartData({
       labels: Array.from({ length: 24 }, (_, i) => `${i}시`),
       datasets: [{
         label: "시간대별 평균 방문자 수",
-        data: hourAvg,
+        data: hourSums,
         backgroundColor: "#5D5FEF",
       }],
     });
 
-    setShowDefaultCharts(false); // ✅ 이동
+    const inCounts = {};
+    const outCounts = {};
+
+    data.forEach(({ timestamp, direction }) => {
+      const dateKey = new Date(timestamp).toISOString().split("T")[0];
+      if (direction === "in") {
+        inCounts[dateKey] = (inCounts[dateKey] || 0) + 1;
+      } else if (direction === "out") {
+        outCounts[dateKey] = (outCounts[dateKey] || 0) + 1;
+      }
+    });
+
+    const allDates = Array.from(new Set([...Object.keys(inCounts), ...Object.keys(outCounts)])).sort();
+    const inData = allDates.map(date => inCounts[date] || 0);
+    const outData = allDates.map(date => -(outCounts[date] || 0));
+
+    setInOutChartData({
+      labels: allDates,
+      datasets: [
+        {
+          label: "입장",
+          data: inData,
+          backgroundColor: "#5D5FEF",
+        },
+        {
+          label: "퇴장",
+          data: outData,
+          backgroundColor: "#FF8F8F",
+        },
+      ],
+    });
+
+    setShowDefaultCharts(false);
   };
 
-  const monthlyData = {
-    labels: Array.from({ length: 30 }, (_, i) => (i + 1).toString().padStart(2, "0")),
-    datasets: [{
-      label: "월별 방문자 수",
-      data: [10, 20, 30, 40, 50, 60, 50, 70, 90, 100, 120, 130, 110, 140, 150, 160, 140, 130, 120, 110, 100, 90, 80, 70, 60, 50, 40, 30, 20, 10],
-      backgroundColor: "#5D5FEF",
-    }],
-  };
+  useEffect(() => {
+    fetchAndSetDefaultCharts();
+  }, []);
 
   return (
     <div className="main-screen">
@@ -104,7 +219,7 @@ const VisitorSummaryPage = () => {
         <div className="overlap-wrapper">
           <div className="overlap">
             <div className="overlap-group">
-              <div className="side-menu">
+            <div className="side-menu">
                 <div className="div">
                   <div className="frame">
                     <div className={`frame-2 active`} onClick={() => navigate("/main")} style={{ cursor: "pointer" }}>
@@ -152,7 +267,6 @@ const VisitorSummaryPage = () => {
                   <div className="text-wrapper-4">Visitor Summary</div>
                 </div>
               </div>
-
               <div className="todays-sales">
                 <div className="today-sales" style={{
                   height: "850px", display: "flex", flexDirection: "column",
@@ -185,30 +299,34 @@ const VisitorSummaryPage = () => {
                   {showDefaultCharts ? (
                     <>
                       <div className="chart-container" style={{ marginBottom: "20px", width: "60%" }}>
-                        <h2>월별 방문자 수</h2>
-                        <Bar data={monthlyData} />
+                        <h2>일별 방문자 수</h2>
+                        {monthlyChartData && <Bar data={monthlyChartData} />}
                       </div>
+
                       <div className="chart-container" style={{ width: "60%" }}>
                         <h2>방문자 수 증감 추이</h2>
-                        <Bar data={defaultInOutData} options={{
-                          responsive: true,
-                          plugins: { legend: { position: "top" } },
-                          scales: {
-                            x: { stacked: true },
-                            y: {
-                              stacked: true,
-                              beginAtZero: true,
-                              ticks: {
-                                callback: function (value) {
-                                  return Math.abs(value);
+                        {inOutChartData && (
+                          <Bar
+                            data={inOutChartData}
+                            options={{
+                              responsive: true,
+                              plugins: { legend: { position: "top" } },
+                              scales: {
+                                x: { stacked: true },
+                                y: {
+                                  stacked: true,
+                                  beginAtZero: true,
+                                  ticks: {
+                                    callback: (v) => Math.abs(v),
+                                  },
                                 },
                               },
-                            },
-                          },
-                          barThickness: 20,
-                          categoryPercentage: 0.6,
-                          barPercentage: 0.8,
-                        }} />
+                            }}
+                            barThickness={20}
+                            categoryPercentage={0.6}
+                            barPercentage={0.8}
+                          />
+                        )}
                       </div>
                     </>
                   ) : (
@@ -227,10 +345,8 @@ const VisitorSummaryPage = () => {
                       )}
                     </>
                   )}
-
                 </div>
               </div>
-
             </div>
           </div>
         </div>
