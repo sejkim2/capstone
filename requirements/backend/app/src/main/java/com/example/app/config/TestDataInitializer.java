@@ -21,16 +21,13 @@ import org.springframework.context.annotation.Configuration;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.Random;
-import java.util.UUID;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.*;
 
 @Configuration
 public class TestDataInitializer {
 
     private final String[] GENDERS = {"male", "female"};
-    private final String[] AGE_GROUPS = {"teen", "adult", "senior"};
+    private final String[] AGE_GROUPS = {"teen", "adult"};
     private final String[] DIRECTIONS = {"in", "out"};
     private final String[] LOCATIONS = {"zoneA", "zoneB", "zoneC", "mall", "parking lot", "gate", "entrance"};
     private final String[] CCTV_PREFIXES = {"CAM", "CCTV", "REC", "MONITOR"};
@@ -42,18 +39,13 @@ public class TestDataInitializer {
     }
 
     private String randomPlateNumber() {
-        return "AB" + random.nextInt(1000) + (char)(random.nextInt(26) + 'A') + (char)(random.nextInt(26) + 'A');
+        return "AB" + random.nextInt(1000)
+                + (char) (random.nextInt(26) + 'A')
+                + (char) (random.nextInt(26) + 'A');
     }
 
     private String randomCctvName(int userIndex) {
         return randomFrom(CCTV_PREFIXES) + "_" + UUID.randomUUID().toString().substring(0, 5) + "_user" + userIndex;
-    }
-
-    private LocalDateTime randomDateTimeBetween(LocalDate startDate, LocalDate endDate) {
-        long startEpoch = startDate.atStartOfDay().toEpochSecond(java.time.ZoneOffset.UTC);
-        long endEpoch = endDate.atTime(LocalTime.MAX).toEpochSecond(java.time.ZoneOffset.UTC);
-        long randomEpoch = ThreadLocalRandom.current().nextLong(startEpoch, endEpoch);
-        return LocalDateTime.ofEpochSecond(randomEpoch, 0, java.time.ZoneOffset.UTC);
     }
 
     @Bean
@@ -66,17 +58,30 @@ public class TestDataInitializer {
                                       FavoriteVideoRepository favoriteVideoRepository,
                                       PersonRecognitionRepository personRecognitionRepository) {
         return args -> {
-            LocalDate startDate = LocalDate.of(2025, 3, 1);
-            LocalDate endDate = LocalDate.of(2025, 5, 1);
+            LocalDate startDate = LocalDate.of(2025, 4, 1);
+            LocalDate endDate = LocalDate.now();
 
-            for (int i = 1; i <= 3; i++) {
+            // 🚗 1000개의 차량을 미리 생성
+            List<Vehicle> vehicles = new ArrayList<>();
+            Set<String> plateNumbers = new HashSet<>();
+            while (vehicles.size() < 1000) {
+                String plate = randomPlateNumber();
+                if (plateNumbers.add(plate)) {
+                    Vehicle vehicle = vehicleRepository.save(Vehicle.builder()
+                            .plateNumber(plate)
+                            .build());
+                    vehicles.add(vehicle);
+                }
+            }
+
+            for (int i = 1; i <= 2; i++) {
                 User user = userRepository.save(User.builder()
                         .email("user" + i + "@test.com")
                         .password("1234")
                         .name("user" + i)
                         .build());
 
-                for (int j = 1; j <= 2; j++) {
+                for (int j = 0; j < 2; j++) {
                     Cctv cctv = cctvRepository.save(Cctv.builder()
                             .user(user)
                             .name(randomCctvName(i))
@@ -84,49 +89,56 @@ public class TestDataInitializer {
                             .streamingUrl("http://stream.example.com/" + UUID.randomUUID())
                             .build());
 
-                    for (int v = 0; v < 3; v++) {
-                        LocalDateTime start = randomDateTimeBetween(startDate, endDate);
-                        LocalDateTime end = start.plusMinutes(30);
+                    boolean favoriteSet = false;
 
+                    for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
+
+                        // 🎥 Video 생성
+                        LocalDateTime videoStart = date.atTime(random.nextInt(24), random.nextInt(60));
+                        LocalDateTime videoEnd = videoStart.plusMinutes(30);
                         Video video = videoRepository.save(Video.builder()
                                 .cctv(cctv)
                                 .s3Path("s3://videos/" + UUID.randomUUID() + ".mp4")
-                                .startTime(start)
-                                .endTime(end)
+                                .startTime(videoStart)
+                                .endTime(videoEnd)
                                 .build());
 
-                        if (v == 0) {
+                        // ⭐ 첫 영상만 찜 처리
+                        if (!favoriteSet) {
                             favoriteVideoRepository.save(FavoriteVideo.builder()
                                     .user(user)
                                     .video(video)
                                     .build());
+                            favoriteSet = true;
                         }
-                    }
 
-                    for (int k = 0; k < 5; k++) {
-                        Vehicle vehicle = vehicleRepository.save(Vehicle.builder()
-                                .plateNumber(randomPlateNumber())
-                                .build());
+                        // 🚗 Visit & Vehicle 재사용
+                        for (int k = 0; k < 50; k++) {
+                            Vehicle vehicle = vehicles.get(random.nextInt(vehicles.size()));
 
-                        LocalDateTime entry = randomDateTimeBetween(startDate, endDate);
-                        LocalDateTime exit = entry.plusMinutes(20);
+                            LocalDateTime entry = date.atTime(random.nextInt(24), random.nextInt(60));
+                            LocalDateTime exit = entry.plusMinutes(20 + random.nextInt(30));
 
-                        visitRepository.save(Visit.builder()
-                                .cctv(cctv)
-                                .vehicle(vehicle)
-                                .entryTime(entry)
-                                .exitTime(exit)
-                                .build());
-                    }
+                            visitRepository.save(Visit.builder()
+                                    .cctv(cctv)
+                                    .vehicle(vehicle)
+                                    .entryTime(entry)
+                                    .exitTime(exit)
+                                    .build());
+                        }
 
-                    for (int r = 0; r < 5; r++) {
-                        personRecognitionRepository.save(PersonRecognition.builder()
-                                .cctv(cctv)
-                                .recognizedAt(randomDateTimeBetween(startDate, endDate))
-                                .direction(randomFrom(DIRECTIONS))
-                                .gender(randomFrom(GENDERS))
-                                .ageGroup(randomFrom(AGE_GROUPS))
-                                .build());
+                        // 🧍 PersonRecognition 생성 (100개)
+                        for (int r = 0; r < 50; r++) {
+                            LocalDateTime recognizedAt = date.atTime(random.nextInt(24), random.nextInt(60));
+
+                            personRecognitionRepository.save(PersonRecognition.builder()
+                                    .cctv(cctv)
+                                    .recognizedAt(recognizedAt)
+                                    .direction(randomFrom(DIRECTIONS))
+                                    .gender(randomFrom(GENDERS))
+                                    .ageGroup(randomFrom(AGE_GROUPS))
+                                    .build());
+                        }
                     }
                 }
             }

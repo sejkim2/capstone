@@ -31,4 +31,4 @@ ENV JAVA_OPTS="-Xmx256m -Xms128m -Duser.timezone=Asia/Seoul"
 COPY --from=builder /app/build/libs/*.jar app.jar
 
 # wait-for-it 실행 후 Spring Boot 앱 시작
-ENTRYPOINT ["sh", "-c", "./wait-for-it.sh database:3306 -- java $JAVA_OPTS -jar app.jar"]
+ENTRYPOINT ["sh", "-c", "./wait-for-it.sh database:3306 --timeout=60 --strict -- java $JAVA_OPTS -jar app.jar"]
