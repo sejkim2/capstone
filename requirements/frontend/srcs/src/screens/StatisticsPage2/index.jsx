@@ -1,9 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Doughnut } from "react-chartjs-2";
 import { IconOutlineShoppingCart1 } from "../../icons/IconOutlineShoppingCart1";
 import "../MainPage/style.css";
-import  {visitorStats}  from "../../data/visitorSatats"; // 배열 형태
 import {
   Chart as ChartJS,
   ArcElement,
@@ -18,98 +17,178 @@ const StatisticsPage2 = () => {
   const location = useLocation();
   const isCCTV = location.pathname === "/cctv";
 
-  const [startDate, setStartDate] = useState("2025-04-01");
-  const [endDate, setEndDate] = useState("2025-04-05");
-  const [startTime, setStartTime] = useState("08:00");
-  const [endTime, setEndTime] = useState("18:00");
+  const today = new Date();
+  const weekAgo = new Date();
+  weekAgo.setDate(today.getDate() - 7);
+
+  const [startDate, setStartDate] = useState(weekAgo.toISOString().split("T")[0]);
+  const [endDate, setEndDate] = useState(today.toISOString().split("T")[0]);
+  const [startTime, setStartTime] = useState("00:00");
+  const [endTime, setEndTime] = useState("23:59");
   const [selectedCCTV, setSelectedCCTV] = useState("CCTV1");
 
-  const [filteredMode, setFilteredMode] = useState(false); // 확인 버튼 눌렀는지 여부
+  const [filteredMode, setFilteredMode] = useState(false);
+  const [dailyMaleFemale, setDailyMaleFemale] = useState(null);
+  const [dailyAdultChild, setDailyAdultChild] = useState(null);
+  const [weeklyMaleFemale, setWeeklyMaleFemale] = useState(null);
+  const [weeklyAdultChild, setWeeklyAdultChild] = useState(null);
   const [filteredMaleFemale, setFilteredMaleFemale] = useState(null);
   const [filteredAdultChild, setFilteredAdultChild] = useState(null);
 
-  const handleDateTimeChange = () => {
-    const start = new Date(`${startDate}T${startTime}`);
-    const end = new Date(`${endDate}T${endTime}`);
+  const filterData = (list, groupField, values) => {
+    return values.map(value =>
+      list.filter(d => d.direction === "in" && d[groupField] === value).length
+    );
+  };
 
-    const filtered = visitorStats.filter(({ timestamp, cctv }) => {
-      const time = new Date(timestamp);
-      return time >= start && time <= end && cctv === selectedCCTV;
+  const fetchStats = async () => {
+    const token = localStorage.getItem("token");
+    const cctvId = selectedCCTV.replace("CCTV", "");
+
+    const fetchData = async (startDate, endDate) => {
+      const params = new URLSearchParams({
+        cctvId,
+        startDate,
+        endDate,
+        startTime: "00:00",
+        endTime: "23:59",
+      });
+      const res = await fetch(`http://localhost:8080/api/person/records?${params}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return res.json();
+    };
+
+    const todayStr = today.toISOString().split("T")[0];
+    const weekAgoStr = weekAgo.toISOString().split("T")[0];
+
+    const todayData = await fetchData(todayStr, todayStr);
+    const weekData = await fetchData(weekAgoStr, todayStr);
+
+    setDailyMaleFemale({
+      labels: ["남성", "여성"],
+      datasets: [{
+        label: "일간 남성/여성",
+        data: filterData(todayData, "gender", ["male", "female"]),
+        backgroundColor: ["#5D5FEF", "#FF6F61"],
+      }],
     });
 
-    const male = filtered.filter(v => v.gender === "male").length;
-    const female = filtered.filter(v => v.gender === "female").length;
-    const adult = filtered.filter(v => v.ageGroup === "adult").length;
-    const child = filtered.filter(v => v.ageGroup === "child").length;
+    setDailyAdultChild({
+      labels: ["성인", "어린이"],
+      datasets: [{
+        label: "일간 성인/어린이",
+        data: filterData(todayData, "ageGroup", ["adult", "child"]),
+        backgroundColor: ["#FFEB3B", "#4CAF50"],
+      }],
+    });
+
+    setWeeklyMaleFemale({
+      labels: ["남성", "여성"],
+      datasets: [{
+        label: "주간 남성/여성",
+        data: filterData(weekData, "gender", ["male", "female"]),
+        backgroundColor: ["#5D5FEF", "#FF6F61"],
+      }],
+    });
+
+    setWeeklyAdultChild({
+      labels: ["성인", "어린이"],
+      datasets: [{
+        label: "주간 성인/어린이",
+        data: filterData(weekData, "ageGroup", ["adult", "child"]),
+        backgroundColor: ["#FFEB3B", "#4CAF50"],
+      }],
+    });
+  };
+
+  useEffect(() => {
+    fetchStats();
+  }, [selectedCCTV]);
+
+  const handleDateTimeChange = async () => {
+    const token = localStorage.getItem("token");
+    const cctvId = selectedCCTV.replace("CCTV", "");
+
+    const params = new URLSearchParams({
+      cctvId,
+      startDate,
+      endDate,
+      startTime,
+      endTime,
+    });
+
+    const res = await fetch(`http://localhost:8080/api/person/records?${params}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
 
     setFilteredMaleFemale({
       labels: ["남성", "여성"],
-      datasets: [
-        {
-          label: "남성/여성 비율",
-          data: [male, female],
-          backgroundColor: ["#5D5FEF", "#FF6F61"],
-        },
-      ],
+      datasets: [{
+        label: "기간 내 남성/여성",
+        data: filterData(data, "gender", ["male", "female"]),
+        backgroundColor: ["#5D5FEF", "#FF6F61"],
+      }],
     });
 
     setFilteredAdultChild({
       labels: ["성인", "어린이"],
-      datasets: [
-        {
-          label: "성인/어린이 비율",
-          data: [adult, child],
-          backgroundColor: ["#FFEB3B", "#4CAF50"],
-        },
-      ],
+      datasets: [{
+        label: "기간 내 성인/어린이",
+        data: filterData(data, "ageGroup", ["adult", "child"]),
+        backgroundColor: ["#FFEB3B", "#4CAF50"],
+      }],
     });
 
     setFilteredMode(true);
   };
 
-  const defaultDailyMaleFemaleData = {
-    labels: ["남성", "여성"],
-    datasets: [
-      {
-        label: "일간 남성/여성 비율",
-        data: [12, 18], // 예시 static
-        backgroundColor: ["#5D5FEF", "#FF6F61"],
-      },
-    ],
-  };
-
-  const defaultDailyAdultChildrenData = {
-    labels: ["성인", "어린이"],
-    datasets: [
-      {
-        label: "일간 성인/어린이 비율",
-        data: [20, 10], // 예시 static
-        backgroundColor: ["#FFEB3B", "#4CAF50"],
-      },
-    ],
-  };
-
-  const defaultWeeklyMaleFemaleData = {
-    labels: ["남성", "여성"],
-    datasets: [
-      {
-        label: "주간 남성/여성 비율",
-        data: [40, 60], // 예시 static
-        backgroundColor: ["#5D5FEF", "#FF6F61"],
-      },
-    ],
-  };
-
-  const defaultWeeklyAdultChildrenData = {
-    labels: ["성인", "어린이"],
-    datasets: [
-      {
-        label: "주간 성인/어린이 비율",
-        data: [55, 45], // 예시 static
-        backgroundColor: ["#FFEB3B", "#4CAF50"],
-      },
-    ],
-  };
+  const renderChart = (data, title) => (
+    <div
+      className="donutchart-container"
+      style={{
+        width: "350px",
+        height: "340px", // ✅ 고정된 높이
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: "#fff",
+        padding: "10px",
+        boxShadow: "0 0 5px rgba(0,0,0,0.1)",
+        borderRadius: "10px"
+      }}
+    >
+      <h2 style={{ fontSize: "16px", marginBottom: "10px" }}>{title}</h2>
+      {data?.datasets?.[0]?.data?.some((n) => n > 0) ? (
+        <Doughnut
+          data={data}
+          options={{
+            animation: false,
+            maintainAspectRatio: false,
+            responsive: true,
+            plugins: {
+              legend: { position: "bottom" },
+            },
+          }}
+          height={220}
+        />
+      ) : (
+        <div
+          style={{
+            height: "220px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "#aaa",
+          }}
+        >
+          데이터 없음
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <div className="main-screen">
@@ -120,50 +199,24 @@ const StatisticsPage2 = () => {
               <div className="side-menu">
                 <div className="div">
                   <div className="frame">
-                    <div
-                      className={`frame-2 active`}
-                      onClick={() => navigate("/main")}
-                      style={{ cursor: "pointer" }}
-                    >
-                      <img
-                        className="icon-outline"
-                        alt="Group"
-                        src="https://c.animaapp.com/DAdHcKHy/img/group@2x.png"
-                      />
+                    <div className="frame-2 active" onClick={() => navigate("/main")} style={{ cursor: "pointer" }}>
+                      <img className="icon-outline" alt="Group" src="https://c.animaapp.com/DAdHcKHy/img/group@2x.png" />
                       <div className="text">방문자 통계</div>
                     </div>
-
-                    <div
-                      className={`frame-3 ${isCCTV ? "active" : ""}`}
-                      onClick={() => navigate("/cctv")}
-                      style={{ cursor: "pointer" }}
-                    >
+                    <div className={`frame-3 ${isCCTV ? "active" : ""}`} onClick={() => navigate("/cctv")} style={{ cursor: "pointer" }}>
                       <IconOutlineShoppingCart1 className="icon-outline" />
                       <div className="text-wrapper">CCTV</div>
                     </div>
-
-                    <div
-                      className="frame-4"
-                      onClick={() => navigate("/")}
-                      style={{ cursor: "pointer" }}
-                    >
+                    <div className="frame-4" onClick={() => navigate("/")} style={{ cursor: "pointer" }}>
                       <div className="sign-out-icon">
-                        <img
-                          className="union"
-                          alt="Union"
-                          src="https://c.animaapp.com/DAdHcKHy/img/union.svg"
-                        />
+                        <img className="union" alt="Union" src="https://c.animaapp.com/DAdHcKHy/img/union.svg" />
                       </div>
                       <div className="text-wrapper-2">Sign Out</div>
                     </div>
                   </div>
                   <div className="dummy-logo">
                     <div className="webcam-video-work">
-                      <img
-                        className="img"
-                        alt="Webcam video work"
-                        src="https://c.animaapp.com/DAdHcKHy/img/webcam-video--work-video-meeting-camera-company-conference-offic@2x.png"
-                      />
+                      <img className="img" alt="Webcam video work" src="https://c.animaapp.com/DAdHcKHy/img/webcam-video--work-video-meeting-camera-company-conference-offic@2x.png" />
                     </div>
                   </div>
                   <div className="text-wrapper-3">Daboa</div>
@@ -177,35 +230,19 @@ const StatisticsPage2 = () => {
               </div>
 
               <div className="todays-sales">
-                <div
-                  className="today-sales"
-                  style={{
-                    height: "850px",
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "flex-start",
-                    alignItems: "center",
-                    fontSize: "24px",
-                    fontWeight: "500",
-                    color: "#444",
-                    backgroundColor: "#fff",
-                  }}
-                >
-                  {/* 날짜/시간/CCTV 선택 */}
-                  <div
-                    className="date-time-picker"
-                    style={{
-                      marginBottom: "20px",
-                      width: "80%",
-                      display: "flex",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    <select
-                      onChange={(e) => setSelectedCCTV(e.target.value)}
-                      value={selectedCCTV}
-                      style={{ padding: "10px", width: "15%" }}
-                    >
+                <div className="today-sales" style={{
+                  height: "850px",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "flex-start",
+                  alignItems: "center",
+                  fontSize: "24px",
+                  fontWeight: "500",
+                  color: "#444",
+                  backgroundColor: "#fff",
+                }}>
+                  <div className="date-time-picker" style={{ marginBottom: "20px", width: "80%", display: "flex", justifyContent: "space-between" }}>
+                    <select onChange={(e) => setSelectedCCTV(e.target.value)} value={selectedCCTV} style={{ padding: "10px", width: "15%" }}>
                       <option value="CCTV1">CCTV1</option>
                       <option value="CCTV2">CCTV2</option>
                     </select>
@@ -221,47 +258,31 @@ const StatisticsPage2 = () => {
                       </div>
                     </div>
                     <button onClick={handleDateTimeChange} style={{
-                      padding: "10px 20px", backgroundColor: "#5D5FEF", color: "white", border: "none", borderRadius: "5px"
+                      padding: "10px 20px",
+                      backgroundColor: "#5D5FEF",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "5px"
                     }}>
                       확인
                     </button>
                   </div>
 
-                  {/* 도넛 차트 */}
                   <div className="donutchart-grid" style={{ display: "flex", flexWrap: "wrap", gap: "40px", justifyContent: "center" }}>
                     {filteredMode ? (
                       <>
-                        <div className="donutchart-container" style={{ width: "300px" }}>
-                          <h2>남성 / 여성</h2>
-                          <Doughnut data={filteredMaleFemale} />
-                        </div>
-                        <div className="donutchart-container" style={{ width: "300px" }}>
-                          <h2>성인 / 어린이</h2>
-                          <Doughnut data={filteredAdultChild} />
-                        </div>
+                        {renderChart(filteredMaleFemale, "기간 내 남성/여성")}
+                        {renderChart(filteredAdultChild, "기간 내 성인/어린이")}
                       </>
                     ) : (
                       <>
-                        <div className="donutchart-container" style={{ width: "350px" }}>
-                          <h2>일간 남성/여성 통계</h2>
-                          <Doughnut data={defaultDailyMaleFemaleData} />
-                        </div>
-                        <div className="donutchart-container" style={{ width: "350px" }}>
-                          <h2>일간 성인/어린이 통계</h2>
-                          <Doughnut data={defaultDailyAdultChildrenData} />
-                        </div>
-                        <div className="donutchart-container" style={{ width: "350px" }}>
-                          <h2>주간 남성/여성 통계</h2>
-                          <Doughnut data={defaultWeeklyMaleFemaleData} />
-                        </div>
-                        <div className="donutchart-container" style={{ width: "350px" }}>
-                          <h2>주간 성인/어린이 통계</h2>
-                          <Doughnut data={defaultWeeklyAdultChildrenData} />
-                        </div>
+                        {renderChart(dailyMaleFemale, "일간 남성/여성")}
+                        {renderChart(dailyAdultChild, "일간 성인/어린이")}
+                        {renderChart(weeklyMaleFemale, "주간 남성/여성")}
+                        {renderChart(weeklyAdultChild, "주간 성인/어린이")}
                       </>
                     )}
                   </div>
-
                 </div>
               </div>
 
