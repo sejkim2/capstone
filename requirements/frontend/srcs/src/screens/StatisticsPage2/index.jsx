@@ -44,7 +44,8 @@ const StatisticsPage2 = () => {
   const fetchStats = async () => {
     const token = localStorage.getItem("token");
     const cctvId = selectedCCTV.replace("CCTV", "");
-
+    console.log("🛠️ 선택된 CCTV ID (일간/주간 통계용):", cctvId); // ✅ 로그 추가
+  
     const fetchData = async (startDate, endDate) => {
       const params = new URLSearchParams({
         cctvId,
@@ -58,13 +59,16 @@ const StatisticsPage2 = () => {
       });
       return res.json();
     };
-
-    const todayStr = today.toISOString().split("T")[0];
-    const weekAgoStr = weekAgo.toISOString().split("T")[0];
-
+  
+    const todayStr = new Date().toISOString().split("T")[0];
+    const weekAgoStr = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+  
     const todayData = await fetchData(todayStr, todayStr);
+    console.log("✅ 오늘 데이터:", todayData); // ✅ 로그 추가
+  
     const weekData = await fetchData(weekAgoStr, todayStr);
-
+    console.log("📅 지난 주 데이터:", weekData); // ✅ 로그 추가
+  
     setDailyMaleFemale({
       labels: ["남성", "여성"],
       datasets: [{
@@ -73,16 +77,16 @@ const StatisticsPage2 = () => {
         backgroundColor: ["#5D5FEF", "#FF6F61"],
       }],
     });
-
+  
     setDailyAdultChild({
       labels: ["성인", "어린이"],
       datasets: [{
         label: "일간 성인/어린이",
-        data: filterData(todayData, "ageGroup", ["adult", "child"]),
+        data: filterData(todayData, "ageGroup", ["adult", "teen"]),
         backgroundColor: ["#FFEB3B", "#4CAF50"],
       }],
     });
-
+  
     setWeeklyMaleFemale({
       labels: ["남성", "여성"],
       datasets: [{
@@ -91,25 +95,22 @@ const StatisticsPage2 = () => {
         backgroundColor: ["#5D5FEF", "#FF6F61"],
       }],
     });
-
+  
     setWeeklyAdultChild({
       labels: ["성인", "어린이"],
       datasets: [{
         label: "주간 성인/어린이",
-        data: filterData(weekData, "ageGroup", ["adult", "child"]),
+        data: filterData(weekData, "ageGroup", ["adult", "teen"]),
         backgroundColor: ["#FFEB3B", "#4CAF50"],
       }],
     });
   };
-
-  useEffect(() => {
-    fetchStats();
-  }, [selectedCCTV]);
-
+  
   const handleDateTimeChange = async () => {
     const token = localStorage.getItem("token");
     const cctvId = selectedCCTV.replace("CCTV", "");
-
+    console.log("🎯 확인 클릭 - 선택된 CCTV ID:", cctvId); // ✅ 로그 추가
+  
     const params = new URLSearchParams({
       cctvId,
       startDate,
@@ -117,12 +118,13 @@ const StatisticsPage2 = () => {
       startTime,
       endTime,
     });
-
+  
     const res = await fetch(`http://localhost:8080/api/person/records?${params}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     const data = await res.json();
-
+    console.log("📦 필터링된 통계 데이터:", data); // ✅ 로그 추가
+  
     setFilteredMaleFemale({
       labels: ["남성", "여성"],
       datasets: [{
@@ -131,18 +133,22 @@ const StatisticsPage2 = () => {
         backgroundColor: ["#5D5FEF", "#FF6F61"],
       }],
     });
-
+  
     setFilteredAdultChild({
       labels: ["성인", "어린이"],
       datasets: [{
         label: "기간 내 성인/어린이",
-        data: filterData(data, "ageGroup", ["adult", "child"]),
+        data: filterData(data, "ageGroup", ["adult", "teen"]),
         backgroundColor: ["#FFEB3B", "#4CAF50"],
       }],
     });
-
+  
     setFilteredMode(true);
   };
+
+  useEffect(() => {
+    fetchStats();
+  }, [selectedCCTV]);
 
   const renderChart = (data, title) => (
     <div
