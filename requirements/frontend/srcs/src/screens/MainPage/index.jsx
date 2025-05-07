@@ -122,7 +122,7 @@ export const Screen = () => {
                 <div className="element" onClick={() => navigate("/statistics-page-3")} style={{ cursor: "pointer" }}>
                   <div className="overlap-2">
                     <div className="text-wrapper-5">Click to View Summary</div>
-                    <div className="text-wrapper-6">고객 분포</div>
+                    <div className="text-wrapper-6">체류시간</div>
                     <div className="icon">
                       <div className="div-wrapper-2">
                         <div className="fastforward-clock">
