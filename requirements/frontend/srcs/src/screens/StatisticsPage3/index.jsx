@@ -156,13 +156,17 @@ const StatisticsPage3 = () => {
     if (!isConfirmed) fetchInitialStayData();
   }, [selectedCCTV]);
 
+  const commonTooltip = <Tooltip formatter={(value) => [`${value}분`, "평균 체류시간"]} />;
+  const commonXAxis = (
+    <XAxis dataKey="name" interval="preserveStartEnd" angle={-45} dy={10} textAnchor="end" />
+  );
+
   return (
     <div className="main-screen">
       <div className="screen">
         <div className="overlap-wrapper">
           <div className="overlap">
             <div className="overlap-group">
-              {/* 사이드 메뉴 생략 없음 */}
               <div className="side-menu">
                 <div className="div">
                   <div className="frame">
@@ -227,12 +231,20 @@ const StatisticsPage3 = () => {
                     ) : (
                       <div style={{ width: "90%", backgroundColor: "#fff", padding: "30px", borderRadius: "20px", boxShadow: "0 0 10px rgba(0,0,0,0.1)", display: "flex", flexDirection: "column", alignItems: "center" }}>
                         <div style={{ fontSize: "20px", fontWeight: "600", marginBottom: "20px" }}>기간 내 일간 평균 체류시간</div>
-                        <ResponsiveContainer width="100%" height={300}>
-                          <BarChart data={dailyChartData}>
+                        <ResponsiveContainer width="100%" height={350}>
+                          <BarChart
+                            data={dailyChartData}
+                            margin={{ top: 20, right: 30, left: 20, bottom: 50 }}
+                          >
                             <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="name" />
+                            <XAxis
+                              dataKey="name"
+                              interval= "preserveStartEnd "
+                              angle={-45}
+                              textAnchor="end"
+                            />
                             <YAxis unit="분" />
-                            <Tooltip />
+                            <Tooltip formatter={(value) => [`${value}분`, "평균 체류시간"]} />
                             <Bar dataKey="value" fill="#4A5CFF" radius={[10, 10, 0, 0]} />
                           </BarChart>
                         </ResponsiveContainer>
@@ -254,7 +266,7 @@ const StatisticsPage3 = () => {
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis dataKey="name" />
                             <YAxis unit="분" />
-                            <Tooltip />
+                            <Tooltip formatter={(value) => [`${value}분`, "평균 체류시간"]} />
                             <Bar dataKey="time" fill="#4A5CFF" radius={[10, 10, 0, 0]} />
                           </BarChart>
                         </ResponsiveContainer>
