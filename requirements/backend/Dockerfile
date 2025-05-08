@@ -16,6 +16,9 @@ RUN gradle clean build -x test --no-daemon
 FROM openjdk:17-jdk-slim
 WORKDIR /app
 
+# /frames 폴더 생성 추가
+RUN mkdir /frames
+
 # wait-for-it.sh 다운로드 및 권한 설정
 RUN apt-get update && apt-get install -y --no-install-recommends curl tzdata \
     && curl -o wait-for-it.sh https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh \
