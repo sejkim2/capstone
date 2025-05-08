@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>저장된 프레임</title>
+    <style>
+        img {
+            width: 300px;
+            margin: 10px;
+            border: 1px solid #ccc;
+        }
+        .pagination a {
+            margin: 0 5px;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+<h1>저장된 프레임 (페이지 [[${currentPage}]] / [[${totalPages}]])</h1>
+
+<div>
+    <div th:each="filename : ${images}">
+        <img th:src="@{'/frames/' + ${filename}}" th:alt="${filename}" />
+    </div>
+</div>
+
+<div class="pagination">
+    <a th:if="${currentPage > 1}" th:href="@{'/frames/view?page=' + (${currentPage} - 1)}">이전</a>
+    <span th:each="i : ${#numbers.sequence(1, totalPages)}">
+        <a th:href="@{'/frames/view?page=' + ${i}}"
+           th:text="${i}"
+           th:style="${i == currentPage} ? 'font-weight: bold; text-decoration: underline;' : ''">1</a>
+    </span>
+    <a th:if="${currentPage < totalPages}" th:href="@{'/frames/view?page=' + (${currentPage} + 1)}">다음</a>
+</div>
+</body>
+</html>
