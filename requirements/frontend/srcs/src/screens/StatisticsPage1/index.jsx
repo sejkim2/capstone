@@ -36,6 +36,7 @@ const VisitorSummaryPage = () => {
   const [inOutChartData, setInOutChartData] = useState(null);
   const [weekdayChartData, setWeekdayChartData] = useState(null);
   const [hourlyChartData, setHourlyChartData] = useState(null);
+  const [genderInOutCharts, setGenderInOutCharts] = useState({ male: null, female: null });
 
   const getDateRange = (start, end) => {
     const result = [];
@@ -100,23 +101,17 @@ const VisitorSummaryPage = () => {
   const handleDateTimeChange = async () => {
     const token = localStorage.getItem("token");
     const cctvId = selectedCCTV.replace("CCTV", "");
-    const params = new URLSearchParams({
-      startDate,
-      endDate,
-      startTime,
-      endTime,
-      cctvId,
-    });
-
+    const params = new URLSearchParams({ startDate, endDate, startTime, endTime, cctvId });
     const res = await fetch(`http://localhost:8080/api/person/records?${params}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     const data = await res.json();
 
-    const weekdaySums = Array(7).fill(0);
-    const weekdayCounts = Array(7).fill(0);
-    const hourSums = Array(24).fill(0);
-    const hourCounts = Array(24).fill(0);
+    const maleIn = Array(24).fill(0), maleOut = Array(24).fill(0);
+    const femaleIn = Array(24).fill(0), femaleOut = Array(24).fill(0);
+
+    const weekdaySums = Array(7).fill(0), weekdayCounts = Array(7).fill(0);
+    const hourSums = Array(24).fill(0), hourCounts = Array(24).fill(0);
 
     const current = new Date(startDate);
     const end = new Date(endDate);
@@ -126,34 +121,63 @@ const VisitorSummaryPage = () => {
       current.setDate(current.getDate() + 1);
     }
 
-    data.forEach(({ timestamp, direction }) => {
+    data.forEach(({ timestamp, direction, gender }) => {
+      const date = new Date(timestamp);
+      const day = date.getDay(), hour = date.getHours();
       if (direction === "in") {
-        const date = new Date(timestamp);
-        const day = date.getDay();
-        const hour = date.getHours();
         weekdaySums[day]++;
         hourSums[hour]++;
+        gender === "male" ? maleIn[hour]++ : gender === "female" && femaleIn[hour]++;
+      } else if (direction === "out") {
+        gender === "male" ? maleOut[hour]++ : gender === "female" && femaleOut[hour]++;
       }
     });
 
     const weekdayAverages = weekdaySums.map((sum, i) =>
       weekdayCounts[i] === 0 ? 0 : parseFloat((sum / weekdayCounts[i]).toFixed(2))
     );
-
     const hourAverages = hourSums.map((sum, i) =>
       hourCounts[i] === 0 ? 0 : parseFloat((sum / hourCounts[i]).toFixed(2))
     );
 
+    const avgMaleIn = maleIn.map((sum, i) =>
+      hourCounts[i] === 0 ? 0 : parseFloat((sum / hourCounts[i]).toFixed(2))
+    );
+    const avgMaleOut = maleOut.map((sum, i) =>
+      hourCounts[i] === 0 ? 0 : -parseFloat((sum / hourCounts[i]).toFixed(2))
+    );
+    const avgFemaleIn = femaleIn.map((sum, i) =>
+      hourCounts[i] === 0 ? 0 : parseFloat((sum / hourCounts[i]).toFixed(2))
+    );
+    const avgFemaleOut = femaleOut.map((sum, i) =>
+      hourCounts[i] === 0 ? 0 : -parseFloat((sum / hourCounts[i]).toFixed(2))
+    );
+
+    const labels = Array.from({ length: 24 }, (_, i) => `${i}시`);
     setWeekdayChartData({
       labels: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
       datasets: [{ label: "요일별 평균 방문자 수", data: weekdayAverages, backgroundColor: "#5D5FEF" }],
     });
-
     setHourlyChartData({
-      labels: Array.from({ length: 24 }, (_, i) => `${i}시`),
+      labels,
       datasets: [{ label: "시간대별 평균 방문자 수", data: hourAverages, backgroundColor: "#5D5FEF" }],
     });
-
+    setGenderInOutCharts({
+      male: {
+        labels,
+        datasets: [
+          { label: "입장", data: avgMaleIn, backgroundColor: "#5D5FEF" },
+          { label: "퇴장", data: avgMaleOut, backgroundColor: "#FF8F8F" },
+        ],
+      },
+      female: {
+        labels,
+        datasets: [
+          { label: "입장", data: avgFemaleIn, backgroundColor: "#5D5FEF" },
+          { label: "퇴장", data: avgFemaleOut, backgroundColor: "#FF8F8F" },
+        ],
+      },
+    });
     setShowDefaultCharts(false);
   };
 
@@ -167,8 +191,6 @@ const VisitorSummaryPage = () => {
         <div className="overlap-wrapper">
           <div className="overlap">
             <div className="overlap-group">
-
-              {/* 사이드바 */}
               <div className="side-menu">
                 <div className="div">
                   <div className="frame">
@@ -207,11 +229,7 @@ const VisitorSummaryPage = () => {
 
               {/* 메인 콘텐츠 */}
               <div className="todays-sales">
-                <div className="today-sales" style={{
-                  height: "850px", display: "flex", flexDirection: "column",
-                  alignItems: "center", fontSize: "24px", fontWeight: "500", color: "#444", backgroundColor: "#fff"
-                }}>
-
+                <div className="today-sales" style={{ maxHeight: "calc(100vh - 120px)", overflowY: "auto", paddingBottom: "40px", backgroundColor: "#fff", display: "flex", flexDirection: "column", alignItems: "center" }}>
                   {/* 날짜/시간 필터 */}
                   <div style={{ display: "flex", justifyContent: "space-between", width: "80%", marginBottom: "20px" }}>
                     <select onChange={(e) => setSelectedCCTV(e.target.value)} value={selectedCCTV} style={{ padding: "10px", borderRadius: "5px", width: "15%" }}>
@@ -273,6 +291,46 @@ const VisitorSummaryPage = () => {
                       <div className="chart-container" style={{ width: "60%" }}>
                         <h2>시간대별 평균 방문자 수</h2>
                         {hourlyChartData && <Bar data={hourlyChartData} />}
+                      </div>
+                      <div className="chart-container" style={{ width: "60%", marginTop: "20px" }}>
+                        <h2>시간대별 평균 증감 추이 (남성)</h2>
+                        {genderInOutCharts.male && (
+                          <Bar
+                            data={genderInOutCharts.male}
+                            options={{
+                              responsive: true,
+                              plugins: { legend: { position: "top" } },
+                              scales: {
+                                x: { stacked: true },
+                                y: {
+                                  stacked: true,
+                                  beginAtZero: true,
+                                  ticks: { callback: v => Math.abs(v) },
+                                },
+                              },
+                            }}
+                          />
+                        )}
+                      </div>
+                      <div className="chart-container" style={{ width: "60%", marginTop: "20px" }}>
+                        <h2>시간대별 평균 증감 추이 (여성)</h2>
+                        {genderInOutCharts.female && (
+                          <Bar
+                            data={genderInOutCharts.female}
+                            options={{
+                              responsive: true,
+                              plugins: { legend: { position: "top" } },
+                              scales: {
+                                x: { stacked: true },
+                                y: {
+                                  stacked: true,
+                                  beginAtZero: true,
+                                  ticks: { callback: v => Math.abs(v) },
+                                },
+                              },
+                            }}
+                          />
+                        )}
                       </div>
                     </>
                   )}
