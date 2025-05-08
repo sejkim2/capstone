@@ -27,12 +27,9 @@ public class PersonRecognitionController {
 
     @PostMapping("/recognition")
     public ResponseEntity<String> receivePersonRecognition(@RequestBody PersonRecognitionRequestDto request) {
-
-        // 1. cctvId로 CCTV 찾기
         Cctv cctv = cctvRepository.findById(request.getCctvId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 CCTV를 찾을 수 없습니다."));
 
-        // 2. 서비스로 넘겨 저장 (parse 필요 없음)
         personRecognitionService.saveRecognition(
                 cctv,
                 request.getTimestamp(),
@@ -89,6 +86,7 @@ public class PersonRecognitionController {
         return ResponseEntity.ok(response);
     }
 
+    // N+1 없이 DTO로 처리된 원시 인식 데이터 반환
     @GetMapping("/records")
     public ResponseEntity<List<PersonInoutRecordDto>> getPersonRecords(
             @RequestParam Long cctvId,
@@ -96,11 +94,11 @@ public class PersonRecognitionController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime startTime,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime endTime) {
+
         LocalDateTime startDateTime = LocalDateTime.of(startDate, startTime);
         LocalDateTime endDateTime = LocalDateTime.of(endDate, endTime);
 
-        List<PersonInoutRecordDto> records = personRecognitionService.getRawRecognitionRecords(cctvId, startDateTime,
-                endDateTime);
+        List<PersonInoutRecordDto> records = personRecognitionService.getRawRecognitionRecords(cctvId, startDateTime, endDateTime);
         return ResponseEntity.ok(records);
     }
 }

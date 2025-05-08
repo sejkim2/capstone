@@ -18,6 +18,7 @@ public class PersonRecognitionService {
 
     private final PersonRecognitionRepository personRecognitionRepository;
 
+    // 사람 인식 데이터 저장
     public void saveRecognition(Cctv cctv, LocalDateTime recognizedAt, String direction, String gender, String ageGroup) {
         PersonRecognition recognition = PersonRecognition.builder()
                 .cctv(cctv)
@@ -30,7 +31,7 @@ public class PersonRecognitionService {
         personRecognitionRepository.save(recognition);
     }
 
-    // 성별/연령 통계 조회
+    // 성별/연령 통계
     public List<PersonRecognitionStatisticsResponseDto> getStatistics(Long cctvId, LocalDateTime startDateTime, LocalDateTime endDateTime) {
         List<PersonRecognition> recognitions = personRecognitionRepository.findByCctv_CctvIdAndRecognizedAtBetween(cctvId, startDateTime, endDateTime);
 
@@ -44,7 +45,7 @@ public class PersonRecognitionService {
                 .collect(Collectors.toList());
     }
 
-    // 입출 통계 조회
+    // 입출 통계
     public Map<String, Integer> getInoutStatistics(Long cctvId, LocalDateTime startDateTime, LocalDateTime endDateTime) {
         List<PersonRecognition> recognitions = personRecognitionRepository.findByCctv_CctvIdAndRecognizedAtBetween(cctvId, startDateTime, endDateTime);
 
@@ -63,15 +64,8 @@ public class PersonRecognitionService {
         return result;
     }
 
+    // 프론트 시각화용 원시 데이터 → DTO projection으로 변경
     public List<PersonInoutRecordDto> getRawRecognitionRecords(Long cctvId, LocalDateTime start, LocalDateTime end) {
-    return personRecognitionRepository.findByCctv_CctvIdAndRecognizedAtBetween(cctvId, start, end).stream()
-            .map(r -> PersonInoutRecordDto.builder()
-                    .cctvId(r.getCctv().getCctvId())
-                    .timestamp(r.getRecognizedAt())
-                    .direction(r.getDirection())
-                    .gender(r.getGender())
-                    .ageGroup(r.getAgeGroup())
-                    .build())
-            .collect(Collectors.toList());
-}
+        return personRecognitionRepository.findDtoByCctvIdAndRecognizedAtBetween(cctvId, start, end);
+    }
 }
