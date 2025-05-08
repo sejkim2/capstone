@@ -1,0 +1,123 @@
+package com.example.app.frame;
+
+import org.springframework.core.io.*;
+import org.springframework.http.*;
+import org.springframework.web.bind.annotation.*;
+
+import java.io.File;
+import java.util.*;
+import java.util.stream.Collectors;
+
+@RestController
+@RequestMapping("/frames")
+public class FrameViewController {
+
+    private static final String FRAME_SAVE_DIR = "/frames";
+    private static final int MAX_FILES = 40; // 최신 100개만 노출
+
+    /**
+     * 단일 이미지 반환
+     */
+    @GetMapping("/{filename}")
+    public ResponseEntity<Resource> getFrame(@PathVariable String filename) {
+        try {
+            File file = new File(FRAME_SAVE_DIR + "/" + filename);
+            if (!file.exists()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            Resource resource = new FileSystemResource(file);
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.IMAGE_JPEG)
+                    .body(resource);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    /**
+     * 최신 이미지 목록을 HTML로 반환 (최대 100개)
+     */
+    @GetMapping("/html")
+    public ResponseEntity<String> listFramesAsHtml() {
+        File dir = new File(FRAME_SAVE_DIR);
+        File[] files = dir.listFiles((d, name) -> name.endsWith(".jpg"));
+
+        if (files == null || files.length == 0) {
+            return ResponseEntity.ok("<html><body><h2>No images found</h2></body></html>");
+        }
+
+        // 최신순 정렬 후 제한
+        List<File> latestFiles = Arrays.stream(files)
+                .sorted(Comparator.comparingLong(File::lastModified).reversed())
+                .limit(MAX_FILES)
+                .collect(Collectors.toList());
+
+        // HTML 생성
+        StringBuilder html = new StringBuilder();
+        html.append("<html><head><meta charset=\"UTF-8\"></head><body>");
+        html.append("<h2>Latest ").append(MAX_FILES).append(" Frames</h2><ul>");
+
+        for (File file : latestFiles) {
+            String name = file.getName();
+            html.append("<li><a href=\"/frames/")
+                .append(name)
+                .append("\" target=\"_blank\">")
+                .append(name)
+                .append("</a></li>");
+        }
+
+        html.append("</ul></body></html>");
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.TEXT_HTML)
+                .body(html.toString());
+    }
+}
+
+package com.example.app.frame;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import java.io.File;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Controller
+public class FrameViewController {
+
+    private static final String FRAME_DIR = "/frames";
+    private static final int PAGE_SIZE = 20;
+
+    @GetMapping("/frames/view")
+    public String viewFrames(@RequestParam(defaultValue = "1") int page, Model model) {
+        File folder = new File(FRAME_DIR);
+        if (!folder.exists() || !folder.isDirectory()) {
+            model.addAttribute("images", List.of());
+            model.addAttribute("totalPages", 1);
+            model.addAttribute("currentPage", page);
+            return "frame_list";
+        }
+
+        List<String> allImages = Arrays.stream(folder.listFiles((dir, name) -> name.endsWith(".jpg")))
+                .map(File::getName)
+                .sorted()
+                .collect(Collectors.toList());
+
+        int totalPages = (int) Math.ceil((double) allImages.size() / PAGE_SIZE);
+        int fromIndex = Math.min((page - 1) * PAGE_SIZE, allImages.size());
+        int toIndex = Math.min(page * PAGE_SIZE, allImages.size());
+
+        List<String> pagedImages = allImages.subList(fromIndex, toIndex);
+
+        model.addAttribute("images", pagedImages);
+        model.addAttribute("totalPages", totalPages);
+        model.addAttribute("currentPage", page);
+        return "frame_list";
+    }
+}
