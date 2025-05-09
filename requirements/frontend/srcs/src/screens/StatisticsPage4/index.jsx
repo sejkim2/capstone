@@ -207,7 +207,9 @@ const StatisticsPage4 = () => {
                   <div style={{ width: "90%" }}>
                     <div style={{ fontSize: "18px", marginBottom: "10px" }}>요일별 평균 재방문 간격</div>
                     <ResponsiveContainer width="100%" height={350}>
-                      <BarChart data={intervalData}>
+                      <BarChart data={intervalData}
+                        margin={{ top: 40, bottom: 20, left: 10, right: 10 }}
+                      >
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="name" />
                         <YAxis hide />

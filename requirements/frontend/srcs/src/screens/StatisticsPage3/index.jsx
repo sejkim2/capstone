@@ -256,7 +256,7 @@ const StatisticsPage3 = () => {
                               textAnchor="end"
                             />
                             <YAxis unit="분" />
-                            <Tooltip formatter={(value) => [`${value}분`, "평균 체류시간"]} />                        
+                            <Tooltip formatter={(value) => [`${value}분`, "평균 체류시간"]} />
                             <Bar dataKey="value" fill="#4A5CFF" radius={[10, 10, 0, 0]} />
                             <ReferenceLine y={dailyAvg} stroke="#FF4D4F" strokeWidth={2} strokeDasharray="4 4" label={{ value: `평균 ${formatTimeLabel(dailyAvg)}`, position: "top", fill: "#FF4D4F", fontSize: 12 }} />
                           </BarChart>
@@ -275,7 +275,10 @@ const StatisticsPage3 = () => {
                       <div style={{ width: "100%" }}>
                         <div style={{ fontSize: "20px", fontWeight: "600", marginBottom: "20px" }}>요일별 평균 체류시간</div>
                         <ResponsiveContainer width="100%" height={300}>
-                          <BarChart data={weeklyData}>
+                          <BarChart
+                            data={weeklyData}
+                            margin={{ top: 40, right: 30, left: 20, bottom: 50 }}
+                          >
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis dataKey="name" />
                             <YAxis unit="분" />

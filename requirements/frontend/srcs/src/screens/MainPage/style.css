@@ -1,586 +1,593 @@
 .screen {
-    background-color: #ffffff;
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    width: 100%;
-  }
-  
-  .screen .overlap-wrapper {
-    background-color: #cbcbcb;
-    height: 1024px;
-    overflow: hidden;
-    width: 1440px;
-  }
-  
-  .screen .overlap {
-    height: 1024px;
-    position: relative;
-    width: 1442px;
-  }
-  
-  .screen .overlap-group {
-    height: 1024px;
-    left: 0;
-    position: absolute;
-    top: 0;
-    width: 1442px;
-  }
-  
-  .screen .side-menu {
-    height: 1024px;
-    left: 0;
-    position: absolute;
-    top: 0;
-    width: 282px;
-  }
-  
-  .screen .div {
-    background-color: var(--colorwhite);
-    height: 1024px;
-    position: relative;
-    width: 280px;
-  }
-  
-  .screen .frame {
-    align-items: flex-start;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    height: 383px;
-    left: 37px;
-    position: absolute;
-    top: 121px;
-    width: 204px;
-  }
-  
-  .screen .frame-2 {
-    align-items: center;
-    align-self: stretch; 
-    background-color: #ffffff;
-    border-radius: 16px;
-    display: flex;
-    gap: 24px;
-    height: 60.53px;
-    overflow: hidden;
-    padding: 16px 24px;
-    position: relative;
-    width: 100%;
-  }
-  
-  .screen .icon-outline {
-    height: 30.27px;
-    margin-bottom: -0.87px;
-    margin-top: -0.87px;
-    position: relative;
-    width: 32.4px;
-  }
-  
-  .screen .text {
-    color: #ffffff;
-    font-family: "Poppins", Helvetica;
-    font-size: 18px;
-    font-weight: 700;
-    height: 25.54px;
-    letter-spacing: 0;
-    line-height: normal;
-    margin-right: -17.68px;
-    position: relative;
-    width: 117.45px;
-  }
-  
-  .screen .frame-3 {
-    align-items: center;
-    align-self: stretch;
-    background-color: #ffffff;
-    border-radius: 16px;
-    display: flex;
-    gap: 24px;
-    height: 60.53px;
-    padding: 16px 24px;
-    position: relative;
-    width: 100%;
-  }
-  
-  .screen .text-wrapper {
-    color: #737791;
-    font-family: "Poppins", Helvetica;
-    font-size: 18px;
-    font-weight: 700;
-    height: 25px;
-    letter-spacing: 0;
-    line-height: normal;
-    position: relative;
-    width: 55px;
-  }
-  
-  .screen .frame-4 {
-    align-items: center;
-    align-self: stretch;
-    display: flex;
-    gap: 24px;
-    height: 60.53px;
-    padding: 16px 24px;
-    position: relative;
-    width: 100%;
-  }
-  
-  .screen .sign-out-icon {
-    height: 32.4px;
-    margin-bottom: -1.94px;
-    margin-top: -1.94px;
-    position: relative;
-    transform: rotate(90.00deg);
-    width: 30.27px;
-  }
-  
-  .screen .group {
-    height: 27px;
-    left: 3px;
-    position: relative;
-    top: 3px;
-    width: 25px;
-  }
-  
-  .screen .union {
-    height: 20px;
-    left: 2px;
-    position: absolute;
-    top: 3px;
-    transform: rotate(-90.00deg);
-    width: 22px;
-  }
-  
-  .screen .text-wrapper-2 {
-    color: #737791;
-    font-family: "Poppins", Helvetica;
-    font-size: 18px;
-    font-weight: 700;
-    height: 26px;
-    letter-spacing: 0;
-    line-height: normal;
-    margin-right: -0.23px;
-    position: relative;
-    width: 100px;
-  }
-  
-  .screen .text-wrapper-3 {
-    color: var(--greysblue-grey900);
-    font-family: var(--3xl-semibold-font-family);
-    font-size: var(--3xl-semibold-font-size);
-    font-style: var(--3xl-semibold-font-style);
-    font-weight: var(--3xl-semibold-font-weight);
-    left: 100px;
-    letter-spacing: var(--3xl-semibold-letter-spacing);
-    line-height: var(--3xl-semibold-line-height);
-    position: absolute;
-    top: 43px;
-    white-space: nowrap;
-    width: 135px;
-  }
-  
-  .screen .dummy-logo {
-    background-color: var(--primary-900);
-    border-radius: 8px;
-    height: 44px;
-    left: 35px;
-    position: absolute;
-    top: 39px;
-    width: 45px;
-  }
-  
-  .screen .webcam-video-work {
-    height: 14px;
-    left: 16px;
-    position: relative;
-    top: 15px;
-    width: 14px;
-  }
-  
-  .screen .img {
-    height: 11px;
-    left: 0;
-    position: absolute;
-    top: 2px;
-    width: 14px;
-  }
-  
-  .screen .top-bar {
-    height: 114px;
-    left: 280px;
-    position: absolute;
-    top: 0;
-    width: 1162px;
-  }
-  
-  .screen .div-wrapper {
-    background-color: var(--colorwhite);
-    height: 114px;
-    position: relative;
-    width: 1160px;
-  }
-  
-  .screen .text-wrapper-4 {
-    color: var(--greysblue-grey900);
-    font-family: var(--4xl-semibold-font-family);
-    font-size: var(--4xl-semibold-font-size);
-    font-style: var(--4xl-semibold-font-style);
-    font-weight: var(--4xl-semibold-font-weight);
-    left: 30px;
-    letter-spacing: var(--4xl-semibold-letter-spacing);
-    line-height: var(--4xl-semibold-line-height);
-    position: absolute;
-    top: 33px;
-    white-space: nowrap;
-    width: 243px;
-  }
-  
-  .screen .todays-sales {
-    height: 850px;
-    left: 310px;
-    position: absolute;
-    top: 142px;
-    width: 1102px;
-  }
-  
-  .screen .today-sales {
-    background-color: #ffffff;
-    border: 1px solid;
-    border-color: #f8f9fa;
-    border-radius: 20px;
-    box-shadow: 0px 4px 20px #ededed80;
-    height: 850px;
-    overflow: hidden;
-    position: relative;
-  }
-  
-  .screen .element {
-    height: 240px;
-    left: 151px;
-    position: absolute;
-    top: 475px;
-    width: 304px;
-  }
-  
-  .screen .overlap-2 {
-    background-color: var(--colorspurple-100);
-    border-radius: 16px;
-    height: 240px;
-    position: relative;
-    width: 300px;
-  }
-  
-  .screen .text-wrapper-5 {
-    color: var(--primary-800);
-    font-family: var(--xs-medium-font-family);
-    font-size: var(--xs-medium-font-size);
-    font-style: var(--xs-medium-font-style);
-    font-weight: var(--xs-medium-font-weight);
-    left: 80px;
-    letter-spacing: var(--xs-medium-letter-spacing);
-    line-height: var(--xs-medium-line-height);
-    position: absolute;
-    top: 193px;
-    width: 141px;
-  }
-  
-  .screen .text-wrapper-6 {
-    color: var(--greysblue-grey900);
-    font-family: var(--2xl-semibold-font-family);
-    font-size: 30px;
-    font-style: var(--2xl-semibold-font-style);
-    font-weight: var(--2xl-semibold-font-weight);
-    left: 90px;
-    letter-spacing: var(--2xl-semibold-letter-spacing);
-    line-height: var(--2xl-semibold-line-height);
-    position: absolute;
-    top: 141px;
-    width: 130px;
-  }
-  
-  .screen .icon {
-    background-color: #bf83ff;
-    border-radius: 40px;
-    height: 80px;
-    left: 110px;
-    position: absolute;
-    top: 32px;
-    width: 80px;
-  }
-  
-  .screen .div-wrapper-2 {
-    height: 48px;
-    left: 16px;
-    position: relative;
-    top: 16px;
-    width: 48px;
-  }
-  
-  .screen .fastforward-clock {
-    height: 46px;
-    left: 1px;
-    position: relative;
-    top: 1px;
-    width: 46px;
-  }
-  
-  .screen .overlap-group-2 {
-    height: 48px;
-    left: -1px;
-    position: relative;
-    top: -1px;
-    width: 48px;
-  }
-  
-  .screen .vector-stroke-2 {
-    height: 22px;
-    left: 22px;
-    position: absolute;
-    top: 10px;
-    width: 13px;
-  }
-  
-  .screen .ellipse-stroke {
-    height: 48px;
-    left: 0;
-    position: absolute;
-    top: 0;
-    width: 48px;
-  }
-  
-  .screen .vector-2-stroke {
-    left: 37px !important;
-    top: 6px !important;
-  }
-  
-  .screen .overlap-group-wrapper {
-    height: 240px;
-    left: 651px;
-    position: absolute;
-    top: 135px;
-    width: 304px;
-  }
-  
-  .screen .overlap-3 {
-    background-color: var(--colorsgreen-100);
-    border-radius: 16px;
-    height: 240px;
-    position: relative;
-    width: 300px;
-  }
-  
-  .screen .text-wrapper-7 {
-    color: var(--greysblue-grey900);
-    font-family: var(--2xl-semibold-font-family);
-    font-size: 30px;
-    font-style: var(--2xl-semibold-font-style);
-    font-weight: var(--2xl-semibold-font-weight);
-    left: 71px;
-    letter-spacing: var(--2xl-semibold-letter-spacing);
-    line-height: var(--2xl-semibold-line-height);
-    position: absolute;
-    top: 141px;
-    width: 160px;
-  }
-  
-  .screen .disc-icon-wrapper {
-    background-color: var(--supporting-colorgreen);
-    border-radius: 40px;
-    height: 80px;
-    left: 110px;
-    position: absolute;
-    top: 28px;
-    width: 80px;
-  }
-  
-  .screen .disc-icon {
-    background-image: url(https://c.animaapp.com/DAdHcKHy/img/pie-chart--product-data-analysis-analytics-pie-business-chart@2x.png);
-    background-size: 100% 100%;
-    height: 48px;
-    left: 17px;
-    position: relative;
-    top: 16px;
-    width: 48px;
-  }
-  
-  .screen .element-2 {
-    height: 240px;
-    left: 651px;
-    position: absolute;
-    top: 475px;
-    width: 304px;
-  }
-  
-  .screen .overlap-4 {
-    background-color: #fff4de;
-    border-radius: 16px;
-    height: 240px;
-    position: relative;
-    width: 300px;
-  }
-  
-  .screen .login-arrow-enter-wrapper {
-    background-color: #ff947a;
-    border-radius: 40px;
-    height: 80px;
-    left: 110px;
-    position: absolute;
-    top: 32px;
-    width: 80px;
-  }
-  
-  .screen .login-arrow-enter {
-    background-image: url(https://c.animaapp.com/DAdHcKHy/img/login-1--arrow-enter-frame-left-login-point-rectangle@2x.png);
-    background-size: 100% 100%;
-    height: 48px;
-    left: 16px;
-    position: relative;
-    top: 16px;
-    width: 48px;
-  }
-  
-  .screen .element-3 {
-    height: 240px;
-    left: 151px;
-    position: absolute;
-    top: 135px;
-    width: 304px;
-  }
-  
-  .screen .overlap-5 {
-    background-color: #ffe2e5;
-    border-radius: 16px;
-    height: 240px;
-    position: relative;
-    width: 300px;
-  }
-  
-  .screen .text-wrapper-8 {
-    color: var(--greysblue-grey900);
-    font-family: var(--2xl-semibold-font-family);
-    font-size: 30px;
-    font-style: var(--2xl-semibold-font-style);
-    font-weight: var(--2xl-semibold-font-weight);
-    left: 55px;
-    letter-spacing: var(--2xl-semibold-letter-spacing);
-    line-height: var(--2xl-semibold-line-height);
-    position: absolute;
-    top: 141px;
-    width: 200px;
-  }
-  
-  .screen .sales-icon-wrapper {
-    background-color: #fa5a7d;
-    border-radius: 40px;
-    height: 80px;
-    left: 110px;
-    position: absolute;
-    top: 28px;
-    width: 80px;
-  }
-  
-  .screen .subtract-wrapper {
-    height: 40px;
-    left: 4px;
-    position: relative;
-    top: 4px;
-    width: 40px;
-  }
-  
-  .screen .subtract {
-    height: 36px;
-    left: 2px;
-    position: absolute;
-    top: 2px;
-    width: 36px;
-  }
-  
-  .screen .overlap-6 {
-    height: 66px;
-    left: 31px;
-    position: absolute;
-    top: 23px;
-    width: 136px;
-  }
-  
-  .screen .group-2 {
-    height: 66px;
-    left: 0;
-    position: absolute;
-    top: 0;
-    width: 136px;
-  }
-  
-  .screen .text-wrapper-9 {
-    color: var(--primarydark-shade);
-    font-family: var(--xl-semibold-font-family);
-    font-size: var(--xl-semibold-font-size);
-    font-style: var(--xl-semibold-font-style);
-    font-weight: var(--xl-semibold-font-weight);
-    left: 0;
-    letter-spacing: var(--xl-semibold-letter-spacing);
-    line-height: var(--xl-semibold-line-height);
-    position: absolute;
-    top: 0;
-    white-space: nowrap;
-  }
-  
-  .screen .text-wrapper-10 {
-    color: var(--greysblue-grey700);
-    font-family: var(--base-regular-font-family);
-    font-size: var(--base-regular-font-size);
-    font-style: var(--base-regular-font-style);
-    font-weight: var(--base-regular-font-weight);
-    left: 2px;
-    letter-spacing: var(--base-regular-letter-spacing);
-    line-height: var(--base-regular-line-height);
-    position: absolute;
-    top: 36px;
-    white-space: nowrap;
-  }
-  
-  /* 기본 텍스트 색상 유지 */
-  .frame-2.active,
-  .frame-3.active {
-    background-color: #5d5fef;
-  }
-  
-  /* 활성화된 텍스트 */
-  .frame-2.active .text,
-  .frame-3.active .text-wrapper {
-    color: white;
-  }
-  
-  /* 활성화된 아이콘 색 반전 */
-  .frame-2.active .icon-outline,
-  .frame-3.active .icon-outline {
-    filter: brightness(0) invert(1);
-  }
-  
-  /* 비활성화 텍스트 색상 유지 */
-  .frame-2:not(.active) .text,
-  .frame-3:not(.active) .text-wrapper {
-    color: #737791;
-  }
-  
-  /* ✅ 비활성화된 아이콘은 필터 제거 */
-  .frame-2:not(.active) .icon-outline,
-  .frame-3:not(.active) .icon-outline {
-    filter: brightness(0.2) invert(0.4);
-  }
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  border-left: 2px solid black;
+  border-right: 2px solid black; 
+  height: 1024px; 
+}
 
-  .donutchart-grid {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 80px;
-  }
-  .donutchart-container {
-    width: 40%;
-    min-width: 320px;
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    text-align: center;
-  }
+.screen .overlap-wrapper {
+  background-color: #FFFFFF;
+  height: 1024px;
+  overflow: visible;
+  width: 1440px;
+  border-right: 2px solid black;
+  border-bottom: 2px solid black;
+  box-sizing: border-box;
+}
+
+.screen .overlap {
+  height: 1024px;
+  position: relative;
+  width: 1442px;
+}
+
+.screen .overlap-group {
+  height: 1024px;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 1442px;
+}
+
+.screen .side-menu {
+  height: 1024px;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 280px;
+}
+
+.screen .div {
+  background-color: var(--colorwhite);
+  width: 278px;    
+  height: 1024px;   
+  border: 2px solid black;
+  box-sizing: border-box;
+}
+
+.screen .frame {
+  align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  height: 383px;
+  left: 37px;
+  position: absolute;
+  top: 121px;
+  width: 204px;
+}
+
+.screen .frame-2 {
+  align-items: center;
+  align-self: stretch;
+  background-color: #ffffff;
+  border-radius: 16px;
+  display: flex;
+  gap: 24px;
+  height: 60.53px;
+  overflow: hidden;
+  padding: 16px 24px;
+  position: relative;
+  width: 100%;
+}
+
+.screen .icon-outline {
+  height: 30.27px;
+  margin-bottom: -0.87px;
+  margin-top: -0.87px;
+  position: relative;
+  width: 32.4px;
+}
+
+.screen .text {
+  color: #ffffff;
+  font-family: "Poppins", Helvetica;
+  font-size: 18px;
+  font-weight: 700;
+  height: 25.54px;
+  letter-spacing: 0;
+  line-height: normal;
+  margin-right: -17.68px;
+  position: relative;
+  width: 117.45px;
+}
+
+.screen .frame-3 {
+  align-items: center;
+  align-self: stretch;
+  background-color: #ffffff;
+  border-radius: 16px;
+  display: flex;
+  gap: 24px;
+  height: 60.53px;
+  padding: 16px 24px;
+  position: relative;
+  width: 100%;
+}
+
+.screen .text-wrapper {
+  color: #737791;
+  font-family: "Poppins", Helvetica;
+  font-size: 18px;
+  font-weight: 700;
+  height: 25px;
+  letter-spacing: 0;
+  line-height: normal;
+  position: relative;
+  width: 55px;
+}
+
+.screen .frame-4 {
+  align-items: center;
+  align-self: stretch;
+  display: flex;
+  gap: 24px;
+  height: 60.53px;
+  padding: 16px 24px;
+  position: relative;
+  width: 100%;
+}
+
+.screen .sign-out-icon {
+  height: 32.4px;
+  margin-bottom: -1.94px;
+  margin-top: -1.94px;
+  position: relative;
+  transform: rotate(90.00deg);
+  width: 30.27px;
+}
+
+.screen .group {
+  height: 27px;
+  left: 3px;
+  position: relative;
+  top: 3px;
+  width: 25px;
+}
+
+.screen .union {
+  height: 20px;
+  left: 2px;
+  position: absolute;
+  top: 3px;
+  transform: rotate(-90.00deg);
+  width: 22px;
+}
+
+.screen .text-wrapper-2 {
+  color: #737791;
+  font-family: "Poppins", Helvetica;
+  font-size: 18px;
+  font-weight: 700;
+  height: 26px;
+  letter-spacing: 0;
+  line-height: normal;
+  margin-right: -0.23px;
+  position: relative;
+  width: 100px;
+}
+
+.screen .text-wrapper-3 {
+  color: var(--greysblue-grey900);
+  font-family: var(--3xl-semibold-font-family);
+  font-size: var(--3xl-semibold-font-size);
+  font-style: var(--3xl-semibold-font-style);
+  font-weight: var(--3xl-semibold-font-weight);
+  left: 100px;
+  letter-spacing: var(--3xl-semibold-letter-spacing);
+  line-height: var(--3xl-semibold-line-height);
+  position: absolute;
+  top: 43px;
+  white-space: nowrap;
+  width: 135px;
+}
+
+.screen .dummy-logo {
+  background-color: var(--primary-900);
+  border-radius: 8px;
+  height: 44px;
+  left: 35px;
+  position: absolute;
+  top: 39px;
+  width: 45px;
+}
+
+.screen .webcam-video-work {
+  height: 14px;
+  left: 16px;
+  position: relative;
+  top: 15px;
+  width: 14px;
+}
+
+.screen .img {
+  height: 11px;
+  left: 0;
+  position: absolute;
+  top: 2px;
+  width: 14px;
+}
+
+.screen .top-bar {
+  height: 114px;
+  left: 276px;
+  position: absolute;
+  top: 0;
+  width: 1170px;  
+  border: none;
+}
+
+.screen .div-wrapper {
+  background-color: var(--colorwhite);
+  height: 114px;
+  width: 1164px;
+  border: 2px solid black; 
+  box-sizing: border-box;
+}
+
+.screen .text-wrapper-4 {
+  color: var(--greysblue-grey900);
+  font-family: var(--4xl-semibold-font-family);
+  font-size: var(--4xl-semibold-font-size);
+  font-style: var(--4xl-semibold-font-style);
+  font-weight: var(--4xl-semibold-font-weight);
+  left: 30px;
+  letter-spacing: var(--4xl-semibold-letter-spacing);
+  line-height: var(--4xl-semibold-line-height);
+  position: absolute;
+  top: 33px;
+  white-space: nowrap;
+  width: 243px;
+}
+
+.screen .todays-sales {
+  height: 850px;
+  left: 310px;
+  position: absolute;
+  top: 142px;
+  width: 1102px;
+}
+
+.screen .today-sales {
+  background-color: #ffffff; /* 흰색 배경 유지 */
+  border: 3px solid #e0e0e0; /* ✅ 테두리만 연한 회색으로 */
+  border-radius: 20px;
+  box-shadow: 0px 4px 20px #ededed80;
+  height: 850px;
+  overflow: visible;
+  position: relative;
+}
+.screen .element {
+  height: 240px;
+  left: 151px;
+  position: absolute;
+  top: 475px;
+  width: 304px;
+}
+
+.screen .overlap-2 {
+  background-color: var(--colorspurple-100);
+  border-radius: 16px;
+  height: 240px;
+  position: relative;
+  width: 300px;
+}
+
+.screen .text-wrapper-5 {
+  color: var(--primary-800);
+  font-family: var(--xs-medium-font-family);
+  font-size: var(--xs-medium-font-size);
+  font-style: var(--xs-medium-font-style);
+  font-weight: var(--xs-medium-font-weight);
+  left: 80px;
+  letter-spacing: var(--xs-medium-letter-spacing);
+  line-height: var(--xs-medium-line-height);
+  position: absolute;
+  top: 193px;
+  width: 141px;
+}
+
+.screen .text-wrapper-6 {
+  color: var(--greysblue-grey900);
+  font-family: var(--2xl-semibold-font-family);
+  font-size: 30px;
+  font-style: var(--2xl-semibold-font-style);
+  font-weight: var(--2xl-semibold-font-weight);
+  left: 90px;
+  letter-spacing: var(--2xl-semibold-letter-spacing);
+  line-height: var(--2xl-semibold-line-height);
+  position: absolute;
+  top: 141px;
+  width: 130px;
+}
+
+.screen .icon {
+  background-color: #bf83ff;
+  border-radius: 40px;
+  height: 80px;
+  left: 110px;
+  position: absolute;
+  top: 32px;
+  width: 80px;
+}
+
+.screen .div-wrapper-2 {
+  height: 48px;
+  left: 16px;
+  position: relative;
+  top: 16px;
+  width: 48px;
+}
+
+.screen .fastforward-clock {
+  height: 46px;
+  left: 1px;
+  position: relative;
+  top: 1px;
+  width: 46px;
+}
+
+.screen .overlap-group-2 {
+  height: 48px;
+  left: -1px;
+  position: relative;
+  top: -1px;
+  width: 48px;
+}
+
+.screen .vector-stroke-2 {
+  height: 22px;
+  left: 22px;
+  position: absolute;
+  top: 10px;
+  width: 13px;
+}
+
+.screen .ellipse-stroke {
+  height: 48px;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 48px;
+}
+
+.screen .vector-2-stroke {
+  left: 37px !important;
+  top: 6px !important;
+}
+
+.screen .overlap-group-wrapper {
+  height: 240px;
+  left: 651px;
+  position: absolute;
+  top: 135px;
+  width: 304px;
+}
+
+.screen .overlap-3 {
+  background-color: var(--colorsgreen-100);
+  border-radius: 16px;
+  height: 240px;
+  position: relative;
+  width: 300px;
+}
+
+.screen .text-wrapper-7 {
+  color: var(--greysblue-grey900);
+  font-family: var(--2xl-semibold-font-family);
+  font-size: 30px;
+  font-style: var(--2xl-semibold-font-style);
+  font-weight: var(--2xl-semibold-font-weight);
+  left: 71px;
+  letter-spacing: var(--2xl-semibold-letter-spacing);
+  line-height: var(--2xl-semibold-line-height);
+  position: absolute;
+  top: 141px;
+  width: 160px;
+}
+
+.screen .disc-icon-wrapper {
+  background-color: var(--supporting-colorgreen);
+  border-radius: 40px;
+  height: 80px;
+  left: 110px;
+  position: absolute;
+  top: 28px;
+  width: 80px;
+}
+
+.screen .disc-icon {
+  background-image: url(https://c.animaapp.com/DAdHcKHy/img/pie-chart--product-data-analysis-analytics-pie-business-chart@2x.png);
+  background-size: 100% 100%;
+  height: 48px;
+  left: 17px;
+  position: relative;
+  top: 16px;
+  width: 48px;
+}
+
+.screen .element-2 {
+  height: 240px;
+  left: 651px;
+  position: absolute;
+  top: 475px;
+  width: 304px;
+}
+
+.screen .overlap-4 {
+  background-color: #fff4de;
+  border-radius: 16px;
+  height: 240px;
+  position: relative;
+  width: 300px;
+}
+
+.screen .login-arrow-enter-wrapper {
+  background-color: #ff947a;
+  border-radius: 40px;
+  height: 80px;
+  left: 110px;
+  position: absolute;
+  top: 32px;
+  width: 80px;
+}
+
+.screen .login-arrow-enter {
+  background-image: url(https://c.animaapp.com/DAdHcKHy/img/login-1--arrow-enter-frame-left-login-point-rectangle@2x.png);
+  background-size: 100% 100%;
+  height: 48px;
+  left: 16px;
+  position: relative;
+  top: 16px;
+  width: 48px;
+}
+
+.screen .element-3 {
+  height: 240px;
+  left: 151px;
+  position: absolute;
+  top: 135px;
+  width: 304px;
+}
+
+.screen .overlap-5 {
+  background-color: #ffe2e5;
+  border-radius: 16px;
+  height: 240px;
+  position: relative;
+  width: 300px;
+}
+
+.screen .text-wrapper-8 {
+  color: var(--greysblue-grey900);
+  font-family: var(--2xl-semibold-font-family);
+  font-size: 30px;
+  font-style: var(--2xl-semibold-font-style);
+  font-weight: var(--2xl-semibold-font-weight);
+  left: 55px;
+  letter-spacing: var(--2xl-semibold-letter-spacing);
+  line-height: var(--2xl-semibold-line-height);
+  position: absolute;
+  top: 141px;
+  width: 200px;
+}
+
+.screen .sales-icon-wrapper {
+  background-color: #fa5a7d;
+  border-radius: 40px;
+  height: 80px;
+  left: 110px;
+  position: absolute;
+  top: 28px;
+  width: 80px;
+}
+
+.screen .subtract-wrapper {
+  height: 40px;
+  left: 4px;
+  position: relative;
+  top: 4px;
+  width: 40px;
+}
+
+.screen .subtract {
+  height: 36px;
+  left: 2px;
+  position: absolute;
+  top: 2px;
+  width: 36px;
+}
+
+.screen .overlap-6 {
+  height: 66px;
+  left: 31px;
+  position: absolute;
+  top: 23px;
+  width: 136px;
+}
+
+.screen .group-2 {
+  height: 66px;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 136px;
+}
+
+.screen .text-wrapper-9 {
+  color: var(--primarydark-shade);
+  font-family: var(--xl-semibold-font-family);
+  font-size: var(--xl-semibold-font-size);
+  font-style: var(--xl-semibold-font-style);
+  font-weight: var(--xl-semibold-font-weight);
+  left: 0;
+  letter-spacing: var(--xl-semibold-letter-spacing);
+  line-height: var(--xl-semibold-line-height);
+  position: absolute;
+  top: 0;
+  white-space: nowrap;
+}
+
+.screen .text-wrapper-10 {
+  color: var(--greysblue-grey700);
+  font-family: var(--base-regular-font-family);
+  font-size: var(--base-regular-font-size);
+  font-style: var(--base-regular-font-style);
+  font-weight: var(--base-regular-font-weight);
+  left: 2px;
+  letter-spacing: var(--base-regular-letter-spacing);
+  line-height: var(--base-regular-line-height);
+  position: absolute;
+  top: 36px;
+  white-space: nowrap;
+}
+
+/* 기본 텍스트 색상 유지 */
+.frame-2.active,
+.frame-3.active {
+  background-color: #5d5fef;
+}
+
+/* 활성화된 텍스트 */
+.frame-2.active .text,
+.frame-3.active .text-wrapper {
+  color: white;
+}
+
+/* 활성화된 아이콘 색 반전 */
+.frame-2.active .icon-outline,
+.frame-3.active .icon-outline {
+  filter: brightness(0) invert(1);
+}
+
+/* 비활성화 텍스트 색상 유지 */
+.frame-2:not(.active) .text,
+.frame-3:not(.active) .text-wrapper {
+  color: #737791;
+}
+
+/* ✅ 비활성화된 아이콘은 필터 제거 */
+.frame-2:not(.active) .icon-outline,
+.frame-3:not(.active) .icon-outline {
+  filter: brightness(0.2) invert(0.4);
+}
+
+.donutchart-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 80px;
+}
+
+.donutchart-container {
+  width: 40%;
+  min-width: 320px;
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
