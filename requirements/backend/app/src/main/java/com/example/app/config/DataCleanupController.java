@@ -1,4 +1,4 @@
-package com.example.app.config;
+package com.example.app.controller;
 
 import com.example.app.cctv.CctvRepository;
 import com.example.app.favoriteVideo.FavoriteVideoRepository;
@@ -7,13 +7,15 @@ import com.example.app.user.UserRepository;
 import com.example.app.vehicle.VehicleRepository;
 import com.example.app.video.VideoRepository;
 import com.example.app.visit.VisitRepository;
-import jakarta.annotation.PreDestroy;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
-@Component
+@RestController
+@RequestMapping("/api/cleanup")
 @RequiredArgsConstructor
-public class TestDataCleaner {
+public class DataCleanupController {
 
     private final PersonRecognitionRepository personRecognitionRepository;
     private final FavoriteVideoRepository favoriteVideoRepository;
@@ -23,10 +25,12 @@ public class TestDataCleaner {
     private final CctvRepository cctvRepository;
     private final UserRepository userRepository;
 
-    @PreDestroy
-    public void cleanupTestData() {
-        System.out.println(">>> 서버 종료 중: 테스트 데이터 삭제 중...");
+    @GetMapping
+    @DeleteMapping
+    @Transactional
+    public ResponseEntity<String> deleteAllData() {
 
+        System.out.println(">>> 서버 종료 중: 테스트 데이터 삭제 중...");
         personRecognitionRepository.deleteAll();
         favoriteVideoRepository.deleteAll();
         visitRepository.deleteAll();
@@ -34,7 +38,8 @@ public class TestDataCleaner {
         vehicleRepository.deleteAll();
         cctvRepository.deleteAll();
         userRepository.deleteAll();
-
         System.out.println(">>> 테스트 데이터 삭제 완료");
+
+        return ResponseEntity.ok("모든 데이터가 삭제되었습니다.");
     }
 }
