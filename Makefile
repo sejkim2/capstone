@@ -6,11 +6,11 @@ all:
 
 .PHONY: up
 up:
-	docker-compose -f $(FILE_PATH) up --build -d
+	docker compose -f $(FILE_PATH) up --build -d
 
 .PHONY: down
 down:
-	docker-compose -f $(FILE_PATH) down
+	docker compose -f $(FILE_PATH) down
 
 .PHONY: clean
 clean: down

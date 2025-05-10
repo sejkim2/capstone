@@ -33,5 +33,9 @@ ENV JAVA_OPTS="-Xmx256m -Xms128m -Duser.timezone=Asia/Seoul"
 # JAR 파일 복사
 COPY --from=builder /app/build/libs/*.jar app.jar
 
-# wait-for-it 실행 후 Spring Boot 앱 시작
-ENTRYPOINT ["sh", "-c", "./wait-for-it.sh database:3306 --timeout=60 --strict -- java $JAVA_OPTS -jar app.jar"]
+# JVM 메모리 제한 설정
+ENV JAVA_OPTS="-Xmx256m -Xms128m"
+
+# Spring 실행 전에 RDS 포트 오픈까지 대기
+ENTRYPOINT ["sh", "-c", "./wait-for-it.sh $MYSQL_HOST:$MYSQL_PORT -- java $JAVA_OPTS -jar app.jar"]
+
