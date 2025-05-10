@@ -24,8 +24,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
 
         // 로그인, 회원가입, 이메일 중복 확인은 필터 건너뛰기
-        if (path.equals("/api/users/signup") || path.equals("/api/users/login")
-                || path.equals("/api/users/check-email")) {
+        if (
+            path.equals("/api/users/signup") ||
+            path.equals("/api/users/login") ||
+            path.equals("/api/users/check-email") ||
+            path.equals("/api/person/recognition") ||
+            path.equals("/api/visits")
+        ) {
             filterChain.doFilter(request, response);
             return;
         }
