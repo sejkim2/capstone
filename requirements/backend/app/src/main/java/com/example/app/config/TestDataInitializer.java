@@ -75,10 +75,13 @@ public class TestDataInitializer {
             }
 
             for (int i = 1; i <= 2; i++) {
+                String uuid = UUID.randomUUID().toString(); // 고유한 UUID 생성
+                String email = "user_" + uuid.substring(0, 8) + "@test.com"; // 앞 8자리만 사용 (짧게)
+    
                 User user = userRepository.save(User.builder()
-                        .email("user" + i + "@test.com")
+                        .email(email)
                         .password("1234")
-                        .name("user" + i)
+                        .name("user_" + uuid.substring(0, 8))
                         .build());
 
                 for (int j = 0; j < 2; j++) {
