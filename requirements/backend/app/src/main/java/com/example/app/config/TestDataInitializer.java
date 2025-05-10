@@ -58,13 +58,13 @@ public class TestDataInitializer {
                                       FavoriteVideoRepository favoriteVideoRepository,
                                       PersonRecognitionRepository personRecognitionRepository) {
         return args -> {
-            LocalDate startDate = LocalDate.of(2025, 4, 1);
+            LocalDate startDate = LocalDate.of(2025, 5, 8);
             LocalDate endDate = LocalDate.now();
 
             // 🚗 1000개의 차량을 미리 생성
             List<Vehicle> vehicles = new ArrayList<>();
             Set<String> plateNumbers = new HashSet<>();
-            while (vehicles.size() < 1000) {
+            while (vehicles.size() < 10) {
                 String plate = randomPlateNumber();
                 if (plateNumbers.add(plate)) {
                     Vehicle vehicle = vehicleRepository.save(Vehicle.builder()
@@ -113,7 +113,7 @@ public class TestDataInitializer {
                         }
 
                         // 🚗 Visit & Vehicle 재사용
-                        for (int k = 0; k < 50; k++) {
+                        for (int k = 0; k < 2; k++) {
                             Vehicle vehicle = vehicles.get(random.nextInt(vehicles.size()));
 
                             LocalDateTime entry = date.atTime(random.nextInt(24), random.nextInt(60));
@@ -128,7 +128,7 @@ public class TestDataInitializer {
                         }
 
                         // 🧍 PersonRecognition 생성 (100개)
-                        for (int r = 0; r < 50; r++) {
+                        for (int r = 0; r < 2; r++) {
                             LocalDateTime recognizedAt = date.atTime(random.nextInt(24), random.nextInt(60));
 
                             personRecognitionRepository.save(PersonRecognition.builder()
