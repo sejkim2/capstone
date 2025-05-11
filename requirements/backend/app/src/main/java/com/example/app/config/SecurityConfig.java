@@ -39,8 +39,9 @@ public class SecurityConfig {
                         "/api/users/login",
                         "/api/users/check-email",
                         "/api/person/recognition",
-                        "/api/visits",
-                        "/api/cleanup"
+                        "/api/visits/vehicle",
+                        "/api/cleanup",
+                        "/ws/frame/**"
                 ).permitAll()
                 .anyRequest().authenticated()
             )
