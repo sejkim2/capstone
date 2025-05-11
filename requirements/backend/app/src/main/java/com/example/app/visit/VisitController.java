@@ -23,7 +23,7 @@ public class VisitController {
 
     private final VisitService visitService;
 
-    @PostMapping
+    @PostMapping("/vehicle")
     public ResponseEntity<?> handleVisit(@RequestBody VisitRequestDto visitRequestDto) {
         visitService.processVisit(visitRequestDto);
         return ResponseEntity.ok().build();
