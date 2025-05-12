@@ -16,8 +16,8 @@ public class WebSocketConfig implements WebSocketConfigurer {
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        // /ws/frame/{videoId} 형태로 등록
-        registry.addHandler(frameWebSocketHandler, "/ws/frame/{videoId}")
+        // /ws/frame/{cctvId} 형태로 등록
+        registry.addHandler(frameWebSocketHandler, "/ws/frame/{cctvId}")
                 .setAllowedOrigins("*"); // 개발 중 허용
     }
 
