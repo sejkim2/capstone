@@ -49,7 +49,7 @@ public class FrameWebSocketHandler extends BinaryWebSocketHandler {
                         UUID.randomUUID());
 
                 Files.write(Paths.get(filename), imageBytes);
-                System.out.println("Saved image: " + filename);
+                // System.out.println("Saved image: " + filename);
             } catch (IOException e) {
                 System.out.println("Failed to save image for [" + cctvId + "]: " + e.getMessage());
             }

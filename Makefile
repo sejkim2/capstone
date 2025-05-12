@@ -16,3 +16,4 @@ down:
 clean: down
 	docker volume prune -a -f
 	docker system prune -a -f
+	docker builder prune -a -f
