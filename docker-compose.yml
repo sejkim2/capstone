@@ -1,13 +1,13 @@
 services:
-  # frontend:
-  #   build: requirements/frontend
-  #   container_name: frontend
-  #   ports:
-  #     - "80:80"
-  #   depends_on:
-  #     - backend
-  #   networks:
-  #     - capstone_network
+  frontend:
+    build: requirements/frontend
+    container_name: frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - capstone_network
 
   backend:
     build: requirements/backend
