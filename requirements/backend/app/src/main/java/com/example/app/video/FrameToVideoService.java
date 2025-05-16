@@ -20,6 +20,9 @@ import java.util.concurrent.locks.ReentrantLock;
 public class FrameToVideoService {
 
     private static final String FRAME_BASE_PATH = "/frames";
+    private static final String VIDEO_BASE_PATH = "/videos";
+    private static final String THUMBNAIL_BASE_PATH = "/thumbnails";
+
     private static final int FRAME_THRESHOLD = 500;
     private static final int FRAME_RATE = 15;
     private static final String BUCKET_NAME = "capstone-cctv-bucket";
@@ -55,6 +58,8 @@ public class FrameToVideoService {
 
     private void processCctvFrames(String cctvIdStr, File[] frames) {
         File tempDir = null;
+        File outputVideo = null;
+        File thumbnailFile = null;
         try {
             Long cctvId = Long.parseLong(cctvIdStr);
             Cctv cctv = cctvRepository.findById(cctvId)
@@ -65,16 +70,26 @@ public class FrameToVideoService {
             LocalDateTime endTime = extractTimeFromFilename(targetFrames[FRAME_THRESHOLD - 1]);
 
             tempDir = Files.createTempDirectory("video_" + cctvId + "_").toFile();
-
             for (int i = 0; i < FRAME_THRESHOLD; i++) {
                 File src = targetFrames[i];
                 File dest = new File(tempDir, String.format("frame_%04d.jpg", i));
                 Files.copy(src.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
             }
 
-            String outputName = "video_" + cctvId + "_" + System.currentTimeMillis() + ".mp4";
-            File outputVideo = new File("/tmp", outputName);
+            String baseName = "video_" + cctvId + "_" + System.currentTimeMillis();
+            String outputName = baseName + ".mp4";
+            String thumbnailName = baseName + ".jpg";
 
+            // 경로 지정
+            File videoDir = new File(VIDEO_BASE_PATH + "/" + cctvId);
+            File thumbDir = new File(THUMBNAIL_BASE_PATH + "/" + cctvId);
+            videoDir.mkdirs();
+            thumbDir.mkdirs();
+
+            outputVideo = new File(videoDir, outputName);
+            thumbnailFile = new File(thumbDir, thumbnailName);
+
+            // 🎞️ FFmpeg로 mp4 생성
             Process process = new ProcessBuilder(
                     "ffmpeg", "-framerate", String.valueOf(FRAME_RATE),
                     "-i", new File(tempDir, "frame_%04d.jpg").getAbsolutePath(),
@@ -85,19 +100,41 @@ public class FrameToVideoService {
             int result = process.waitFor();
             if (result != 0 || !outputVideo.exists()) {
                 logProcessError(process);
-                throw new RuntimeException("ffmpeg failed with exit code " + result);
+                throw new RuntimeException("ffmpeg video generation failed with exit code " + result);
             }
 
-            String s3Path = "videos/" + cctvId + "/" + outputName;
-            amazonS3.putObject(BUCKET_NAME, s3Path, outputVideo);
+            // 🖼️ FFmpeg로 썸네일 생성
+            Process thumbProcess = new ProcessBuilder(
+                    "ffmpeg",
+                    "-i", outputVideo.getAbsolutePath(),
+                    "-ss", "00:00:01.000",
+                    "-vframes", "1",
+                    thumbnailFile.getAbsolutePath()
+            ).redirectErrorStream(true).start();
 
+            int thumbResult = thumbProcess.waitFor();
+            if (thumbResult != 0 || !thumbnailFile.exists()) {
+                logProcessError(thumbProcess);
+                throw new RuntimeException("Thumbnail generation failed with exit code " + thumbResult);
+            }
+
+            // ☁️ S3 업로드
+            String s3VideoPath = "videos/" + cctvId + "/" + outputName;
+            String s3ThumbPath = "thumbnails/" + cctvId + "/" + thumbnailName;
+
+            amazonS3.putObject(BUCKET_NAME, s3VideoPath, outputVideo);
+            amazonS3.putObject(BUCKET_NAME, s3ThumbPath, thumbnailFile);
+
+            // 💾 DB 저장
             videoRepository.save(Video.builder()
                     .cctv(cctv)
-                    .s3Path("s3://" + BUCKET_NAME + "/" + s3Path)
+                    .s3Path("s3://" + BUCKET_NAME + "/" + s3VideoPath)
+                    .thumbnailPath("s3://" + BUCKET_NAME + "/" + s3ThumbPath)
                     .startTime(startTime)
                     .endTime(endTime)
                     .build());
 
+            // 🧹 사용한 프레임 삭제
             for (File f : targetFrames) f.delete();
 
         } catch (Exception e) {
@@ -107,6 +144,8 @@ public class FrameToVideoService {
                 Arrays.stream(Objects.requireNonNull(tempDir.listFiles())).forEach(File::delete);
                 tempDir.delete();
             }
+            if (outputVideo != null && outputVideo.exists()) outputVideo.delete();
+            if (thumbnailFile != null && thumbnailFile.exists()) thumbnailFile.delete();
         }
     }
 
