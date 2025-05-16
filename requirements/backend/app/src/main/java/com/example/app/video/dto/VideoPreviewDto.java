@@ -7,10 +7,8 @@ import java.time.LocalDateTime;
 
 @Getter
 @AllArgsConstructor
-public class VideoResponseDto {
-    private Long videoId;
+public class VideoPreviewDto {
     private String videoUrl;
     private String thumbnailUrl;
-    private LocalDateTime startTime;
-    private LocalDateTime endTime;
+    private LocalDateTime timestamp;
 }
