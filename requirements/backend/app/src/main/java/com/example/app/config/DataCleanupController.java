@@ -30,7 +30,7 @@ public class DataCleanupController {
     @Transactional
     public ResponseEntity<String> deleteAllData() {
 
-        System.out.println(">>> 서버 종료 중: 테스트 데이터 삭제 중...");
+        System.out.println(">>> 테스트 데이터 삭제 중...");
         personRecognitionRepository.deleteAll();
         favoriteVideoRepository.deleteAll();
         visitRepository.deleteAll();
