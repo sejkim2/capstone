@@ -15,7 +15,7 @@ import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
-@Service
+// @Service
 @RequiredArgsConstructor
 public class FrameToVideoService {
 

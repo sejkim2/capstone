@@ -23,7 +23,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
-@Configuration
+// @Configuration
 public class TestDataInitializer {
 
     private final String[] GENDERS = {"male", "female"};
@@ -86,7 +86,7 @@ public class TestDataInitializer {
 
                 for (int j = 0; j < 2; j++) {
                     Cctv cctv = cctvRepository.save(Cctv.builder()
-                            .cctvId((long) ((i - 1) * 2 + j + 1))
+                            // .cctvId((long) ((i - 1) * 2 + j + 1))
                             .user(user)
                             .name(randomCctvName(i))
                             .location(randomFrom(LOCATIONS))
