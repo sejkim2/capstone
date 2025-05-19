@@ -2,25 +2,24 @@ package com.example.app.frame;
 
 import org.springframework.stereotype.Component;
 
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.Map;
+import java.util.concurrent.*;
 
 @Component
 public class FrameQueueManager {
 
-    private final BlockingQueue<FrameData> queue = new LinkedBlockingQueue<>(1000); // 최대 1000장까지 버퍼링
+    private final Map<String, BlockingQueue<FrameData>> queueMap = new ConcurrentHashMap<>();
 
     public void enqueue(FrameData frame) {
-        if (!queue.offer(frame)) {
-            System.out.println("[QUEUE FULL] Dropping frame from CCTV " + frame.getCctvId());
-        }
+        String cctvId = frame.getCctvId();
+        queueMap.computeIfAbsent(cctvId, k -> new LinkedBlockingQueue<>(1000)).offer(frame);
     }
 
-    public FrameData take() throws InterruptedException {
-        return queue.take(); // 소비자는 블로킹 방식으로 대기
+    public FrameData take(String cctvId) throws InterruptedException {
+        return queueMap.computeIfAbsent(cctvId, k -> new LinkedBlockingQueue<>(1000)).take();
     }
 
-    public int size() {
-        return queue.size();
+    public int size(String cctvId) {
+        return queueMap.getOrDefault(cctvId, new LinkedBlockingQueue<>()).size();
     }
 }

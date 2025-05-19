@@ -1,5 +1,9 @@
 package com.example.app.frame;
 
+import com.amazonaws.services.s3.AmazonS3;
+import com.example.app.cctv.Cctv;
+import com.example.app.cctv.CctvRepository;
+import com.example.app.video.VideoRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -8,36 +12,30 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class WorkerInitializer {
 
-    private final FrameSaveWorker frameSaveWorker;
-    private final FrameStreamWorker frameStreamWorker;
-
-    // @PostConstruct
-    // public void init() {
-    //     Thread saveThread = new Thread(frameSaveWorker, "frame-save-worker");
-    //     Thread streamThread = new Thread(frameStreamWorker, "frame-stream-worker");
-
-    //     saveThread.setDaemon(true);   // 데몬 쓰레드로 설정 → Spring 종료 시 같이 종료됨
-    //     streamThread.setDaemon(true);
-
-    //     saveThread.start();
-    //     streamThread.start();
-
-    //     System.out.println("Frame workers started.");
-    // }
+    private final FrameQueueManager queueManager;
+    private final AmazonS3 amazonS3;
+    private final CctvRepository cctvRepository;
+    private final VideoRepository videoRepository;
+    private final FrameStreamWorkerRegistry streamRegistry;
 
     @PostConstruct
-public void init() {
-    for (int i = 0; i < 4; i++) {
-        Thread saveThread = new Thread(frameSaveWorker, "frame-save-worker-" + i);
-        saveThread.setDaemon(true);
-        saveThread.start();
+    public void init() {
+        for (Cctv cctv : cctvRepository.findAll()) {
+            // String cctvId = cctv.getId().toString();
+            String cctvId = cctv.getCctvId().toString();
+
+
+            // 저장용 워커 실행
+            FrameSaveWorker saveWorker = new FrameSaveWorker(
+                    cctvId, queueManager, amazonS3, cctvRepository, videoRepository
+            );
+            new Thread(saveWorker, "save-" + cctvId).start();
+
+            // 스트리밍용 워커 실행
+            FrameStreamWorker streamWorker = new FrameStreamWorker(cctvId, queueManager);
+            streamRegistry.registerWorker(cctvId, streamWorker);
+            new Thread(streamWorker, "stream-" + cctvId).start();
+        }
     }
-
-    Thread streamThread = new Thread(frameStreamWorker, "frame-stream-worker");
-    streamThread.setDaemon(true);
-    streamThread.start();
-
-    System.out.println("멀티 FrameSaveWorker 시작 완료");
 }
 
-}

@@ -10,15 +10,19 @@ import org.springframework.web.socket.handler.BinaryWebSocketHandler;
 public class FrameWebSocketHandler extends BinaryWebSocketHandler {
 
     private final FrameQueueManager queueManager;
-    private final FrameStreamWorker streamWorker;
+    private final FrameStreamWorkerRegistry streamRegistry;
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) {
         String path = session.getUri().getPath();
 
         if (path.startsWith("/ws/stream-view")) {
-            streamWorker.registerSession(session);
-            System.out.println("📺 프론트엔드 연결됨: " + session.getId());
+            String query = session.getUri().getQuery(); // 예: cctvId=101
+            if (query != null && query.startsWith("cctvId=")) {
+                String cctvId = query.split("=")[1];
+                streamRegistry.registerSession(cctvId, session);
+                System.out.println("📺 프론트 연결됨: " + session.getId() + ", CCTV: " + cctvId);
+            }
         } else {
             System.out.println("📡 YOLO 연결됨: " + session.getId() + ", 경로: " + path);
         }
@@ -26,33 +30,25 @@ public class FrameWebSocketHandler extends BinaryWebSocketHandler {
 
     @Override
     public void handleBinaryMessage(WebSocketSession session, BinaryMessage message) {
-        String path = session.getUri().getPath(); // 예: /ws/frame/101
+        String path = session.getUri().getPath(); // /ws/frame/101
         String[] parts = path.split("/");
+        if (parts.length < 4) return;
 
-        if (parts.length < 4) {
-            System.err.println("[WebSocket] 잘못된 경로 형식: " + path);
-            return;
-        }
-
-        String cctvId = parts[3]; // {cctvId}
+        String cctvId = parts[3];
         byte[] imageBytes = message.getPayload().array();
         long timestamp = System.currentTimeMillis();
 
-        // ✅ 디버깅 로그
-        System.out.println("[WebSocket] 프레임 수신: cctvId=" + cctvId + ", 크기=" + imageBytes.length);
-
-        FrameData frame = new FrameData(cctvId, imageBytes, timestamp);
-        queueManager.enqueue(frame);
+        queueManager.enqueue(new FrameData(cctvId, imageBytes, timestamp));
     }
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
-        streamWorker.removeSession(session);
-        System.out.println("❌ 연결 종료됨: " + session.getId() + " (" + status + ")");
+        streamRegistry.removeSession(session);
     }
 
     @Override
     public void handleTransportError(WebSocketSession session, Throwable exception) {
-        System.err.println("[WebSocket] 전송 오류 발생 - 세션: " + session.getId() + ", 오류: " + exception.getMessage());
+        System.err.println("[WebSocket] 오류 - " + exception.getMessage());
     }
 }
+
