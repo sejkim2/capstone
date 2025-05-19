@@ -54,7 +54,7 @@ const StatisticsPage2 = () => {
         startTime: "00:00",
         endTime: "23:59",
       });
-      const res = await fetch(`http://localhost:8080/api/person/records?${params}`, {
+      const res = await fetch(`/api/person/records?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       return res.json();
@@ -119,7 +119,7 @@ const StatisticsPage2 = () => {
       endTime,
     });
   
-    const res = await fetch(`http://localhost:8080/api/person/records?${params}`, {
+    const res = await fetch(`/api/person/records?${params}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     const data = await res.json();

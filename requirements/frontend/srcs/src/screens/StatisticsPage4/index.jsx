@@ -45,7 +45,7 @@ const StatisticsPage4 = () => {
     const params = new URLSearchParams({ startDate, endDate, startTime, endTime, cctvId });
 
     try {
-      const res = await fetch(`http://localhost:8080/api/visits/revisit?${params}`, {
+      const res = await fetch(`/api/visits/revisit?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();

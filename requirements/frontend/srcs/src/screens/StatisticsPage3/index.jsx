@@ -70,7 +70,7 @@ const StatisticsPage3 = () => {
     });
 
     try {
-      const res = await fetch(`http://localhost:8080/api/visits?${params}`, {
+      const res = await fetch(`/api/visits?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -121,7 +121,7 @@ const StatisticsPage3 = () => {
     });
 
     try {
-      const res = await fetch(`http://localhost:8080/api/visits?${params}`, {
+      const res = await fetch(`/api/visits?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();

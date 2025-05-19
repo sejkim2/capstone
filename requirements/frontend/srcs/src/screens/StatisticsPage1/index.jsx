@@ -60,7 +60,7 @@ const VisitorSummaryPage = () => {
       cctvId,
     });
 
-    const res = await fetch(`http://localhost:8080/api/person/records?${params}`, {
+    const res = await fetch(`/api/person/records?${params}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     const data = await res.json();
@@ -102,7 +102,7 @@ const VisitorSummaryPage = () => {
     const token = localStorage.getItem("token");
     const cctvId = selectedCCTV.replace("CCTV", "");
     const params = new URLSearchParams({ startDate, endDate, startTime, endTime, cctvId });
-    const res = await fetch(`http://localhost:8080/api/person/records?${params}`, {
+    const res = await fetch(`/api/person/records?${params}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     const data = await res.json();
