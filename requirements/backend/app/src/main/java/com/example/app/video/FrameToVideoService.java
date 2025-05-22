@@ -89,7 +89,7 @@ public class FrameToVideoService {
             outputVideo = new File(videoDir, outputName);
             thumbnailFile = new File(thumbDir, thumbnailName);
 
-            // 🎞️ FFmpeg로 mp4 생성
+            // FFmpeg로 mp4 생성
             Process process = new ProcessBuilder(
                     "ffmpeg", "-framerate", String.valueOf(FRAME_RATE),
                     "-i", new File(tempDir, "frame_%04d.jpg").getAbsolutePath(),
@@ -103,7 +103,7 @@ public class FrameToVideoService {
                 throw new RuntimeException("ffmpeg video generation failed with exit code " + result);
             }
 
-            // 🖼️ FFmpeg로 썸네일 생성
+            // FFmpeg로 썸네일 생성
             Process thumbProcess = new ProcessBuilder(
                     "ffmpeg",
                     "-i", outputVideo.getAbsolutePath(),
@@ -118,14 +118,14 @@ public class FrameToVideoService {
                 throw new RuntimeException("Thumbnail generation failed with exit code " + thumbResult);
             }
 
-            // ☁️ S3 업로드
+            // S3 업로드
             String s3VideoPath = "videos/" + cctvId + "/" + outputName;
             String s3ThumbPath = "thumbnails/" + cctvId + "/" + thumbnailName;
 
             amazonS3.putObject(BUCKET_NAME, s3VideoPath, outputVideo);
             amazonS3.putObject(BUCKET_NAME, s3ThumbPath, thumbnailFile);
 
-            // 💾 DB 저장
+            // DB 저장
             videoRepository.save(Video.builder()
                     .cctv(cctv)
                     .s3Path("s3://" + BUCKET_NAME + "/" + s3VideoPath)
@@ -134,7 +134,7 @@ public class FrameToVideoService {
                     .endTime(endTime)
                     .build());
 
-            // 🧹 사용한 프레임 삭제
+            // 사용한 프레임 삭제
             for (File f : targetFrames) f.delete();
 
         } catch (Exception e) {

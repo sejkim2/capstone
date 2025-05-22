@@ -23,7 +23,7 @@ public class FrameSaveWorker implements Runnable {
     private final CctvRepository cctvRepository;
     private final VideoRepository videoRepository;
 
-    private static final int FRAME_THRESHOLD = 100;
+    private static final int FRAME_THRESHOLD = 400;
     private static final int FRAME_RATE = 15;
     private static final String VIDEO_BASE_PATH = "/videos";
     private static final String THUMBNAIL_BASE_PATH = "/thumbnails";

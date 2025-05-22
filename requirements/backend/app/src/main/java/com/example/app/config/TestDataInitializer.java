@@ -61,7 +61,7 @@ public class TestDataInitializer {
             LocalDate startDate = LocalDate.of(2025, 5, 8);
             LocalDate endDate = LocalDate.now();
 
-            // 🚗 1000개의 차량을 미리 생성
+            // 1000개의 차량을 미리 생성
             List<Vehicle> vehicles = new ArrayList<>();
             Set<String> plateNumbers = new HashSet<>();
             while (vehicles.size() < 10) {
@@ -97,7 +97,7 @@ public class TestDataInitializer {
 
                     for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
 
-                        // 🎥 Video 생성
+                        // Video 생성
                         LocalDateTime videoStart = date.atTime(random.nextInt(24), random.nextInt(60));
                         LocalDateTime videoEnd = videoStart.plusMinutes(30);
                         Video video = videoRepository.save(Video.builder()
@@ -107,7 +107,7 @@ public class TestDataInitializer {
                                 .endTime(videoEnd)
                                 .build());
 
-                        // ⭐ 첫 영상만 찜 처리
+                        // 첫 영상만 찜 처리
                         if (!favoriteSet) {
                             favoriteVideoRepository.save(FavoriteVideo.builder()
                                     .user(user)
@@ -116,7 +116,7 @@ public class TestDataInitializer {
                             favoriteSet = true;
                         }
 
-                        // 🚗 Visit & Vehicle 재사용
+                        // Visit & Vehicle 재사용
                         for (int k = 0; k < 2; k++) {
                             Vehicle vehicle = vehicles.get(random.nextInt(vehicles.size()));
 
@@ -131,7 +131,7 @@ public class TestDataInitializer {
                                     .build());
                         }
 
-                        // 🧍 PersonRecognition 생성 (100개)
+                        // PersonRecognition 생성 (100개)
                         for (int r = 0; r < 2; r++) {
                             LocalDateTime recognizedAt = date.atTime(random.nextInt(24), random.nextInt(60));
 

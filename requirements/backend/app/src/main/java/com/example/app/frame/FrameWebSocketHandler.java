@@ -21,10 +21,10 @@ public class FrameWebSocketHandler extends BinaryWebSocketHandler {
             if (query != null && query.startsWith("cctvId=")) {
                 String cctvId = query.split("=")[1];
                 streamRegistry.registerSession(cctvId, session);
-                System.out.println("📺 프론트 연결됨: " + session.getId() + ", CCTV: " + cctvId);
+                System.out.println("프론트 연결됨: " + session.getId() + ", CCTV: " + cctvId);
             }
         } else {
-            System.out.println("📡 YOLO 연결됨: " + session.getId() + ", 경로: " + path);
+            System.out.println("YOLO 연결됨: " + session.getId() + ", 경로: " + path);
         }
     }
 
