@@ -15,7 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 // @RestController
-// @RequestMapping("/api/cleanup")
+// @RequestMapping("/cleanup")
 @RequiredArgsConstructor
 public class DataCleanupController {
 
@@ -35,22 +35,22 @@ public class DataCleanupController {
     @Transactional
     public ResponseEntity<String> deleteAllData() {
         System.out.println(">>> 테스트 데이터 삭제 중...");
-        personRecognitionRepository.deleteAll();
-        favoriteVideoRepository.deleteAll();
-        visitRepository.deleteAll();
+        // personRecognitionRepository.deleteAll();
+        // favoriteVideoRepository.deleteAll();
+        // visitRepository.deleteAll();
         videoRepository.deleteAll();
-        vehicleRepository.deleteAll();
-        cctvRepository.deleteAll();
-        userRepository.deleteAll();
+        // vehicleRepository.deleteAll();
+        // cctvRepository.deleteAll();
+        // userRepository.deleteAll();
 
         // AUTO_INCREMENT 초기화
-        em.createNativeQuery("ALTER TABLE person_recognition AUTO_INCREMENT = 1").executeUpdate();
-        em.createNativeQuery("ALTER TABLE favorite_video AUTO_INCREMENT = 1").executeUpdate();
-        em.createNativeQuery("ALTER TABLE visit AUTO_INCREMENT = 1").executeUpdate();
+        // em.createNativeQuery("ALTER TABLE person_recognition AUTO_INCREMENT = 1").executeUpdate();
+        // em.createNativeQuery("ALTER TABLE favorite_video AUTO_INCREMENT = 1").executeUpdate();
+        // em.createNativeQuery("ALTER TABLE visit AUTO_INCREMENT = 1").executeUpdate();
         em.createNativeQuery("ALTER TABLE video AUTO_INCREMENT = 1").executeUpdate();
-        em.createNativeQuery("ALTER TABLE vehicle AUTO_INCREMENT = 1").executeUpdate();
-        em.createNativeQuery("ALTER TABLE cctv AUTO_INCREMENT = 1").executeUpdate();
-        em.createNativeQuery("ALTER TABLE users AUTO_INCREMENT = 1").executeUpdate();
+        // em.createNativeQuery("ALTER TABLE vehicle AUTO_INCREMENT = 1").executeUpdate();
+        // em.createNativeQuery("ALTER TABLE cctv AUTO_INCREMENT = 1").executeUpdate();
+        // em.createNativeQuery("ALTER TABLE users AUTO_INCREMENT = 1").executeUpdate();
 
         System.out.println(">>> 테스트 데이터 삭제 완료 및 AUTO_INCREMENT 초기화 완료");
 
