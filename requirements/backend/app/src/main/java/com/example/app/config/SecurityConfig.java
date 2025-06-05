@@ -40,7 +40,7 @@ public class SecurityConfig {
                         "/api/users/check-email",
                         "/api/person/recognition",
                         "/api/visits/vehicle",
-                        "/api/cleanup",
+                        "/cleanup",
                         "/ws/frame/**",
                         "/ws/stream-view/**"
                 ).permitAll()
