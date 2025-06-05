@@ -1,16 +1,39 @@
-# Step 1: Gradle을 사용하여 JAR 파일을 빌드
+# Step 1: Gradle을 사용하여 JAR 파일 빌드
 FROM gradle:8.5-jdk17 AS builder
 WORKDIR /app
-COPY app/ .
-RUN gradle clean build -x test
 
-# Step 2: JAR 파일을 포함하여 실행할 컨테이너 생성
+# Gradle 캐시를 살리기 위해 의존성 관련 파일만 먼저 복사
+COPY app/build.gradle app/settings.gradle ./
+RUN gradle build --no-daemon -x test || return 0
+
+# 소스 코드 복사
+COPY app/ .
+
+# 실제 빌드
+RUN gradle clean build -x test --no-daemon
+
+# Step 2: 경량 실행용 컨테이너
 FROM openjdk:17-jdk-slim
 WORKDIR /app
 
-# .jar 파일을 명시적으로 경로를 지정하여 복사
-# build.gradle에서 앱 이름 지정 가능 (default : 프로젝트 디렉토리명)
-# 유연하게 JAR 복사 (이름에 의존하지 않음)
+# /frames 폴더 생성 + ffmpeg 설치 + wait-for-it
+RUN mkdir /frames && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends ffmpeg curl tzdata && \
+    curl -o wait-for-it.sh https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh && \
+    chmod +x wait-for-it.sh && \
+    ln -snf /usr/share/zoneinfo/Asia/Seoul /etc/localtime && \
+    echo "Asia/Seoul" > /etc/timezone && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# 환경변수: JVM 메모리 제한 + JVM 시간대 설정
+# ENV JAVA_OPTS="-Xmx384m -Xms128m -Duser.timezone=Asia/Seoul"
+ENV JAVA_OPTS="-Xmx4g -Xms512m -Duser.timezone=Asia/Seoul"
+
+
+# JAR 파일 복사
 COPY --from=builder /app/build/libs/*.jar app.jar
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Spring 실행 전에 RDS 포트 오픈까지 대기
+ENTRYPOINT ["sh", "-c", "./wait-for-it.sh $MYSQL_HOST:$MYSQL_PORT -- java $JAVA_OPTS -jar app.jar"]
+
