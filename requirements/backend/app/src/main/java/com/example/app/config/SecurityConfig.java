@@ -39,7 +39,10 @@ public class SecurityConfig {
                         "/api/users/login",
                         "/api/users/check-email",
                         "/api/person/recognition",
-                        "/api/visits"
+                        "/api/visits/vehicle",
+                        "/cleanup",
+                        "/ws/frame/**",
+                        "/ws/stream-view/**"
                 ).permitAll()
                 .anyRequest().authenticated()
             )
@@ -53,7 +56,7 @@ public class SecurityConfig {
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
 
-        config.setAllowedOriginPatterns(List.of("http://localhost")); // 프론트 주소만 허용
+        config.setAllowedOriginPatterns(List.of("http://3.37.67.240", "http://3.37.216.98")); // 프론트 주소만 허용
         config.setAllowCredentials(true); // 쿠키/Authorization 허용
         config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));

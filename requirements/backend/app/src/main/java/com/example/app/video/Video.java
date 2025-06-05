@@ -30,6 +30,9 @@ public class Video {
     @Column(name = "s3_path", nullable = false, length = 255)
     private String s3Path;
 
+    @Column(name = "thumbnail_path", length = 255)
+    private String thumbnailPath;
+
     @Column(name = "start_time", nullable = false)
     private LocalDateTime startTime;
 

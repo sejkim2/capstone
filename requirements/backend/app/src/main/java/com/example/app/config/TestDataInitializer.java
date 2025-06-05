@@ -23,7 +23,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
-@Configuration
+// @Configuration
 public class TestDataInitializer {
 
     private final String[] GENDERS = {"male", "female"};
@@ -58,13 +58,13 @@ public class TestDataInitializer {
                                       FavoriteVideoRepository favoriteVideoRepository,
                                       PersonRecognitionRepository personRecognitionRepository) {
         return args -> {
-            LocalDate startDate = LocalDate.of(2025, 4, 1);
+            LocalDate startDate = LocalDate.of(2025, 5, 8);
             LocalDate endDate = LocalDate.now();
 
-            // 🚗 1000개의 차량을 미리 생성
+            // 1000개의 차량을 미리 생성
             List<Vehicle> vehicles = new ArrayList<>();
             Set<String> plateNumbers = new HashSet<>();
-            while (vehicles.size() < 1000) {
+            while (vehicles.size() < 10) {
                 String plate = randomPlateNumber();
                 if (plateNumbers.add(plate)) {
                     Vehicle vehicle = vehicleRepository.save(Vehicle.builder()
@@ -75,14 +75,18 @@ public class TestDataInitializer {
             }
 
             for (int i = 1; i <= 2; i++) {
+                String uuid = UUID.randomUUID().toString(); // 고유한 UUID 생성
+                String email = "user_" + uuid.substring(0, 8) + "@test.com"; // 앞 8자리만 사용 (짧게)
+    
                 User user = userRepository.save(User.builder()
-                        .email("user" + i + "@test.com")
+                        .email(email)
                         .password("1234")
-                        .name("user" + i)
+                        .name("user_" + uuid.substring(0, 8))
                         .build());
 
                 for (int j = 0; j < 2; j++) {
                     Cctv cctv = cctvRepository.save(Cctv.builder()
+                            // .cctvId((long) ((i - 1) * 2 + j + 1))
                             .user(user)
                             .name(randomCctvName(i))
                             .location(randomFrom(LOCATIONS))
@@ -93,7 +97,7 @@ public class TestDataInitializer {
 
                     for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
 
-                        // 🎥 Video 생성
+                        // Video 생성
                         LocalDateTime videoStart = date.atTime(random.nextInt(24), random.nextInt(60));
                         LocalDateTime videoEnd = videoStart.plusMinutes(30);
                         Video video = videoRepository.save(Video.builder()
@@ -103,7 +107,7 @@ public class TestDataInitializer {
                                 .endTime(videoEnd)
                                 .build());
 
-                        // ⭐ 첫 영상만 찜 처리
+                        // 첫 영상만 찜 처리
                         if (!favoriteSet) {
                             favoriteVideoRepository.save(FavoriteVideo.builder()
                                     .user(user)
@@ -112,8 +116,8 @@ public class TestDataInitializer {
                             favoriteSet = true;
                         }
 
-                        // 🚗 Visit & Vehicle 재사용
-                        for (int k = 0; k < 50; k++) {
+                        // Visit & Vehicle 재사용
+                        for (int k = 0; k < 2; k++) {
                             Vehicle vehicle = vehicles.get(random.nextInt(vehicles.size()));
 
                             LocalDateTime entry = date.atTime(random.nextInt(24), random.nextInt(60));
@@ -127,8 +131,8 @@ public class TestDataInitializer {
                                     .build());
                         }
 
-                        // 🧍 PersonRecognition 생성 (100개)
-                        for (int r = 0; r < 50; r++) {
+                        // PersonRecognition 생성 (100개)
+                        for (int r = 0; r < 2; r++) {
                             LocalDateTime recognizedAt = date.atTime(random.nextInt(24), random.nextInt(60));
 
                             personRecognitionRepository.save(PersonRecognition.builder()

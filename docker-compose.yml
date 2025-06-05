@@ -1,19 +1,17 @@
 services:
-  frontend:
-    build: requirements/frontend
-    container_name: frontend
-    ports:
-      - "80:80"
-    depends_on:
-      - backend
-    networks:
-      - capstone_network
+  # frontend:
+  #   build: requirements/frontend
+  #   container_name: frontend
+  #   ports:
+  #     - "80:80"
+  #   depends_on:
+  #     - backend
+  #   networks:
+  #     - capstone_network
 
   backend:
     build: requirements/backend
     container_name: backend
-    depends_on:
-      - database
     ports:
       - "8080:8080"
     environment:
@@ -26,22 +24,9 @@ services:
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
       JWT_EXPIRATION_TIME: ${JWT_EXPIRATION_TIME}
       TZ: Asia/Seoul
-    networks:
-      - capstone_network
-  
-  database:
-    image: mysql:8.0
-    container_name: database
-    environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE:  ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-    ports:
-      - "3306:3306"
-    networks:
-      - capstone_network
+    # networks:
+    #   - capstone_network
 
-networks:
-  capstone_network:
-    driver: bridge
+# networks:
+#   capstone_network:
+#     driver: bridge

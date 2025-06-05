@@ -29,7 +29,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             path.equals("/api/users/login") ||
             path.equals("/api/users/check-email") ||
             path.equals("/api/person/recognition") ||
-            path.equals("/api/visits")
+            path.equals("/api/visits/vehicle") ||
+            path.equals("/cleanup") || 
+            path.startsWith("/ws/frame") ||
+            path.startsWith("/ws/stream-view")
         ) {
             filterChain.doFilter(request, response);
             return;
