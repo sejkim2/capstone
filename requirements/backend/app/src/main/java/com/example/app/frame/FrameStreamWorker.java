@@ -15,22 +15,10 @@ public class FrameStreamWorker implements Runnable {
     private final FrameQueueManager queueManager;
     private final Set<WebSocketSession> sessions = ConcurrentHashMap.newKeySet();
 
-    // 중복 세션 제거 + 새 세션 등록
+    // 여러 사용자의 세션을 모두 유지
     public void registerSession(WebSocketSession newSession) {
-        for (WebSocketSession session : sessions) {
-            if (session.isOpen()) {
-                try {
-                    session.close();
-                    System.out.println("기존 세션 종료됨: " + session.getId());
-                } catch (IOException e) {
-                    System.err.println("[StreamWorker] 세션 닫기 실패: " + e.getMessage());
-                }
-            }
-        }
-
-        sessions.clear();
         sessions.add(newSession);
-        System.out.println("새 세션 등록됨: " + newSession.getId() + " (CCTV " + cctvId + ")");
+        System.out.println("세션 추가됨: " + newSession.getId() + " (CCTV " + cctvId + ")");
     }
 
     public void removeSession(WebSocketSession session) {
@@ -39,26 +27,29 @@ public class FrameStreamWorker implements Runnable {
     }
 
     @Override
-    public void run() {
-        System.out.println("StreamWorker 시작: CCTV " + cctvId);
-        while (true) {
-            try {
-                FrameData frame = queueManager.take(cctvId);
-                BinaryMessage message = new BinaryMessage(frame.getImageBytes());
+public void run() {
+    System.out.println("StreamWorker 시작: CCTV " + cctvId);
+    while (!Thread.currentThread().isInterrupted()) {
+        try {
+            FrameData frame = queueManager.take(cctvId);
+            BinaryMessage message = new BinaryMessage(frame.getImageBytes());
 
-                for (WebSocketSession session : sessions) {
+            for (WebSocketSession session : sessions) {
+                try {
                     if (session.isOpen()) {
-                        try {
-                            session.sendMessage(message);
-                        } catch (IOException e) {
-                            System.err.println("[StreamWorker] 전송 실패: " + e.getMessage());
-                        }
+                        session.sendMessage(message);
+                    } else {
+                        removeSession(session);
                     }
+                } catch (IOException | IllegalStateException e) {
+                    System.err.println("[StreamWorker] 전송 실패, 세션 제거: " + session.getId() + " - " + e.getMessage());
+                    removeSession(session);
                 }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                break;
             }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            break;
         }
     }
+}
 }
