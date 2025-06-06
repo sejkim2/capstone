@@ -1,4 +1,4 @@
-
+![컴공2분반_8조_포스터_AI를 활용한 CCTV 기반 매장 고객관리 플랫폼_다보아](https://github.com/user-attachments/assets/a6530e1f-946b-47cb-a793-021cd4417e75)
 
 ## Makefile 사용법
 1. make : 빌드
