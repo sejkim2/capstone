@@ -65,9 +65,17 @@ const CCTVPage = () => {
       };
     }, [cctvId]);
 
+    const cctvNameMap = {
+      1: "주차장",
+      2: "2층입구",
+      3: "매장입구",
+    };
+    
     return (
       <div style={{ textAlign: "center" }}>
-        <div style={{ fontWeight: "600", marginBottom: "8px" }}>CCTV{cctvId}</div>
+        <div style={{ fontWeight: "600", marginBottom: "8px" }}>
+          {cctvNameMap[cctvId] || `CCTV${cctvId}`}
+        </div>
         <canvas
           ref={canvasRef}
           width={480}
@@ -241,7 +249,6 @@ const CCTVPage = () => {
                   <CCTVStream key={1} cctvId={1} />
                   <CCTVStream key={2} cctvId={2} />
                   <CCTVStream key={3} cctvId={3} />
-                  <CCTVStream key={4} cctvId={4} />
                 </div>
               ) : (
                 <div
@@ -278,10 +285,9 @@ const CCTVPage = () => {
                         width: "15%",
                       }}
                     >
-                      <option value="CCTV1">CCTV1</option>
-                      <option value="CCTV2">CCTV2</option>
-                      <option value="CCTV3">CCTV3</option>
-                      <option value="CCTV4">CCTV4</option>
+                      <option value="CCTV1">주차장</option>
+                      <option value="CCTV2">2층입구</option>
+                      <option value="CCTV3">매장입구</option>
                     </select>
 
                     <div style={{ display: "flex", justifyContent: "space-between", width: "70%" }}>

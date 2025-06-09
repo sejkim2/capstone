@@ -5,6 +5,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, RadialBarChart, RadialBar, LabelList
 } from "recharts";
 import "../MainPage/style.css";
+import { mockRevisitData } from "../../data/mockRevisitDataPage4.js";
 
 const StatisticsPage4 = () => {
   const navigate = useNavigate();
@@ -44,23 +45,63 @@ const StatisticsPage4 = () => {
     const cctvId = getCctvId(selectedCCTV);
     const params = new URLSearchParams({ startDate, endDate, startTime, endTime, cctvId });
 
+    const from = new Date(`${startDate}T${startTime}`);
+    const to = new Date(`${endDate}T${endTime}`);
+    const dummyEndDate = new Date("2025-05-20T00:00:00");
+
+    let combinedData = {};
+
     try {
       const res = await fetch(`/api/visits/revisit?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const data = await res.json();
-      const revisitData = data.revisit_data || {};
 
-      // 재방문자만 필터링
-      const filtered = Object.values(revisitData).filter(v => v.length > 1);
+      const apiRes = await res.json();
+      const apiData = apiRes && typeof apiRes.revisit_data === "object" ? apiRes.revisit_data : {};
+      console.log("✅ [API 응답]", apiData);
+
+      // ✅ 1. 더미 데이터 병합
+      if (from < dummyEndDate) {
+        const dummyData = mockRevisitData.revisit_data || mockRevisitData || {};
+        for (const [vid, visits] of Object.entries(dummyData)) {
+          const filtered = visits.filter(v => {
+            const inDate = new Date(v.in);
+            return inDate >= from && inDate <= to;
+          });
+          if (filtered.length > 0) {
+            combinedData[vid] = (combinedData[vid] || []).concat(filtered);
+          }
+        }
+        console.log("🟨 [더미 병합 후]", combinedData);
+      }
+
+      // ✅ 2. API 데이터 병합
+      if (apiData && typeof apiData === "object") {
+        for (const [vid, visits] of Object.entries(apiData)) {
+          combinedData[vid] = (combinedData[vid] || []).concat(visits);
+        }
+      }
+      console.log("🟩 [최종 병합된 combinedData]", combinedData);
+
+      // ✅ 3. 재방문자 필터
+      const filtered = Object.values(combinedData).filter(visits => {
+        const validVisits = visits.filter(v => v.in && v.out);
+        return validVisits.length > 1;
+      });
       const totalVehicles = filtered.length;
-
-      const rate = totalVehicles > 0 ? Math.round((totalVehicles / Object.keys(revisitData).length) * 100) : 0;
+      const rate = totalVehicles > 0
+        ? Math.round((totalVehicles / Object.keys(combinedData).length) * 100)
+        : 0;
       setRevisitRate(rate);
 
+      // ✅ 4. 재방문 간격 계산
       const intervals = [], dayMap = {};
       filtered.forEach(visits => {
-        const sorted = visits.map(v => new Date(v.in)).sort((a, b) => a - b);
+        const validVisits = visits.filter(v => v.in && v.out);
+        const sorted = validVisits
+          .map(v => new Date(v.in))
+          .sort((a, b) => a - b);
+
         for (let i = 1; i < sorted.length; i++) {
           const diff = (sorted[i] - sorted[i - 1]) / (1000 * 60);
           intervals.push(diff);
@@ -70,31 +111,27 @@ const StatisticsPage4 = () => {
         }
       });
 
-      const avg = intervals.length ? Math.round(intervals.reduce((a, b) => a + b, 0) / intervals.length) : 0;
+      const avg = intervals.length
+        ? Math.round(intervals.reduce((a, b) => a + b, 0) / intervals.length)
+        : 0;
       setAvgInterval(avg);
       setFormatInterval(formatToTimeStr(avg));
 
       const weekdayOrder = ["월", "화", "수", "목", "금", "토", "일"];
-
       const weekDataUnsorted = Object.entries(dayMap).map(([day, list]) => {
         const avgMin = Math.round(list.reduce((a, b) => a + b, 0) / list.length);
-        return {
-          name: day,
-          value: avgMin,
-          label: formatToTimeStr(avgMin)
-        };
+        return { name: day, value: avgMin, label: formatToTimeStr(avgMin) };
       });
 
       const weekData = weekdayOrder.map(day =>
         weekDataUnsorted.find(d => d.name === day) || {
           name: day,
           value: 0,
-          label: "0일 0시간 0분"
+          label: "0일 0시간 0분",
         }
       );
 
       setIntervalData(weekData);
-
     } catch (err) {
       console.error("재방문률 API 오류", err);
     }
@@ -162,10 +199,7 @@ const StatisticsPage4 = () => {
                   {/* 날짜 선택 필터 */}
                   <div style={{ width: "80%", display: "flex", justifyContent: "space-between", marginBottom: "30px" }}>
                     <select onChange={(e) => setSelectedCCTV(e.target.value)} value={selectedCCTV} style={{ padding: "10px", borderRadius: "5px", width: "15%" }}>
-                      <option value="CCTV1">CCTV1</option>
-                      <option value="CCTV2">CCTV2</option>
-                      <option value="CCTV3">CCTV3</option>
-                      <option value="CCTV4">CCTV4</option>
+                      <option value="CCTV1">주차장</option>
                     </select>
                     <div style={{ display: "flex", justifyContent: "space-between", width: "70%" }}>
                       <div>
@@ -214,8 +248,8 @@ const StatisticsPage4 = () => {
                         <XAxis dataKey="name" />
                         <YAxis hide />
                         <Tooltip formatter={(v) => [formatToTimeStr(v), "간격"]} />
-                        <Bar dataKey="value" fill="#4A5CFF" radius={[10, 10, 0, 0]}>
-                          <LabelList dataKey="label" position="top" style={{ fill: "#333", fontSize: 14 }} />
+                        <Bar dataKey="value" fill="#4A5CFF" radius={[10, 10, 0, 0]} barSize={90}>
+                          <LabelList dataKey="label" position="top" style={{ fill: "#333", fontSize: 12, whiteSpace: "nowrap" }} />
                         </Bar>
                       </BarChart>
                     </ResponsiveContainer>

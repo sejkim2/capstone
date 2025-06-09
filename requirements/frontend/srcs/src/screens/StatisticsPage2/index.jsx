@@ -3,12 +3,14 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Doughnut } from "react-chartjs-2";
 import { IconOutlineShoppingCart1 } from "../../icons/IconOutlineShoppingCart1";
 import "../MainPage/style.css";
+import { visitorStats } from "../../data/visitorStats";
 import {
   Chart as ChartJS,
   ArcElement,
   Tooltip,
   Legend,
 } from "chart.js";
+
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -25,7 +27,7 @@ const StatisticsPage2 = () => {
   const [endDate, setEndDate] = useState(today.toISOString().split("T")[0]);
   const [startTime, setStartTime] = useState("00:00");
   const [endTime, setEndTime] = useState("23:59");
-  const [selectedCCTV, setSelectedCCTV] = useState("CCTV1");
+  const [selectedCCTV, setSelectedCCTV] = useState("CCTV2");
 
   const [filteredMode, setFilteredMode] = useState(false);
   const [dailyMaleFemale, setDailyMaleFemale] = useState(null);
@@ -37,7 +39,7 @@ const StatisticsPage2 = () => {
 
   const filterData = (list, groupField, values) => {
     return values.map(value =>
-      list.filter(d => d.direction === "in" && d[groupField] === value).length
+      list.filter(d => d.direction === "IN" && d[groupField] === value).length
     );
   };
 
@@ -45,7 +47,7 @@ const StatisticsPage2 = () => {
     const token = localStorage.getItem("token");
     const cctvId = selectedCCTV.replace("CCTV", "");
     console.log("🛠️ 선택된 CCTV ID (일간/주간 통계용):", cctvId); // ✅ 로그 추가
-  
+
     const fetchData = async (startDate, endDate) => {
       const params = new URLSearchParams({
         cctvId,
@@ -59,58 +61,57 @@ const StatisticsPage2 = () => {
       });
       return res.json();
     };
-  
+
     const todayStr = new Date().toISOString().split("T")[0];
     const weekAgoStr = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
-  
+
     const todayData = await fetchData(todayStr, todayStr);
     console.log("✅ 오늘 데이터:", todayData); // ✅ 로그 추가
-  
+
     const weekData = await fetchData(weekAgoStr, todayStr);
     console.log("📅 지난 주 데이터:", weekData); // ✅ 로그 추가
-  
+
     setDailyMaleFemale({
       labels: ["남성", "여성"],
       datasets: [{
         label: "일간 남성/여성",
         data: filterData(todayData, "gender", ["male", "female"]),
-        backgroundColor: ["#5D5FEF", "#FF6F61"],
+        backgroundColor: ["#6FA8DC", "#F08080"],
       }],
     });
-  
+
     setDailyAdultChild({
-      labels: ["성인", "어린이"],
+      labels: ["어린이", "성인", "노인"],
       datasets: [{
-        label: "일간 성인/어린이",
-        data: filterData(todayData, "ageGroup", ["adult", "teen"]),
-        backgroundColor: ["#FFEB3B", "#4CAF50"],
+        label: "일간 연령대",
+        data: filterData(todayData, "ageGroup", ["less18", "middle", "over60"]),
+        backgroundColor: ["#FFD54F", "#A8E6CF", "#D7CCC8"],
       }],
     });
-  
+
     setWeeklyMaleFemale({
       labels: ["남성", "여성"],
       datasets: [{
         label: "주간 남성/여성",
         data: filterData(weekData, "gender", ["male", "female"]),
-        backgroundColor: ["#5D5FEF", "#FF6F61"],
+        backgroundColor: ["#6FA8DC", "#F08080"],
       }],
     });
-  
+
     setWeeklyAdultChild({
-      labels: ["성인", "어린이"],
+      labels: ["어린이", "성인", "노인"],
       datasets: [{
-        label: "주간 성인/어린이",
-        data: filterData(weekData, "ageGroup", ["adult", "teen"]),
-        backgroundColor: ["#FFEB3B", "#4CAF50"],
+        label: "주간 연령대",
+        data: filterData(weekData, "ageGroup", ["less18", "middle", "over60"]),
+        backgroundColor: ["#FFD54F", "#A8E6CF", "#D7CCC8"],
       }],
     });
   };
-  
+
   const handleDateTimeChange = async () => {
     const token = localStorage.getItem("token");
     const cctvId = selectedCCTV.replace("CCTV", "");
-    console.log("🎯 확인 클릭 - 선택된 CCTV ID:", cctvId); // ✅ 로그 추가
-  
+
     const params = new URLSearchParams({
       cctvId,
       startDate,
@@ -118,31 +119,52 @@ const StatisticsPage2 = () => {
       startTime,
       endTime,
     });
-  
+
     const res = await fetch(`/api/person/records?${params}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    const data = await res.json();
-    console.log("📦 필터링된 통계 데이터:", data); // ✅ 로그 추가
-  
+    const apiData = await res.json();
+
+    // 🔵 더미 + API 병합 처리
+    const sDate = new Date(`${startDate}T${startTime}`);
+    const eDate = new Date(`${endDate}T${endTime}`);
+    const dummyCutoff = new Date("2025-05-21T00:00:00");
+
+    const dummyData = visitorStats.filter((d) => {
+      const ts = new Date(d.timestamp);
+      return (
+        d.cctv === selectedCCTV &&
+        ts >= sDate &&
+        ts <= eDate
+      );
+    });
+
+    const combinedData = eDate < dummyCutoff
+      ? dummyData
+      : sDate >= dummyCutoff
+        ? apiData
+        : [...dummyData, ...apiData];
+
+    console.log("📦 병합된 통계 데이터:", combinedData);
+
     setFilteredMaleFemale({
       labels: ["남성", "여성"],
       datasets: [{
         label: "기간 내 남성/여성",
-        data: filterData(data, "gender", ["male", "female"]),
-        backgroundColor: ["#5D5FEF", "#FF6F61"],
+        data: filterData(combinedData, "gender", ["male", "female"]),
+        backgroundColor: ["#6FA8DC", "#F08080"],
       }],
     });
-  
+
     setFilteredAdultChild({
-      labels: ["성인", "어린이"],
+      labels: ["어린이", "성인", "노인"],
       datasets: [{
-        label: "기간 내 성인/어린이",
-        data: filterData(data, "ageGroup", ["adult", "teen"]),
-        backgroundColor: ["#FFEB3B", "#4CAF50"],
+        label: "기간 내 연령대",
+        data: filterData(combinedData, "ageGroup", ["less18", "middle", "over60"]),
+        backgroundColor: ["#FFD54F", "#A8E6CF", "#D7CCC8"],
       }],
     });
-  
+
     setFilteredMode(true);
   };
 
@@ -249,8 +271,8 @@ const StatisticsPage2 = () => {
                 }}>
                   <div className="date-time-picker" style={{ marginBottom: "20px", width: "80%", display: "flex", justifyContent: "space-between" }}>
                     <select onChange={(e) => setSelectedCCTV(e.target.value)} value={selectedCCTV} style={{ padding: "10px", width: "15%" }}>
-                      <option value="CCTV1">CCTV1</option>
-                      <option value="CCTV2">CCTV2</option>
+                      <option value="CCTV3">매장입구</option>
+                      <option value="CCTV2">2층입구</option>
                     </select>
                     <div style={{ display: "flex", width: "70%", justifyContent: "space-between" }}>
                       <div>

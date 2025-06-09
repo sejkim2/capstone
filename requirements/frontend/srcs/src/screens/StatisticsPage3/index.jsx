@@ -5,7 +5,9 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, RadialBarChart, RadialBar, ReferenceLine
 } from "recharts";
+import { LabelList } from "recharts";
 import "../MainPage/style.css";
+import { mockVisitorData } from "../../data/mockVisitorData";
 
 const StatisticsPage3 = () => {
   const navigate = useNavigate();
@@ -34,6 +36,24 @@ const StatisticsPage3 = () => {
   const overallAvg = weeklyData.length
     ? Math.round(weeklyData.reduce((sum, d) => sum + d.time, 0) / weeklyData.length)
     : 0;
+
+
+  const dayOrder = ["월", "화", "수", "목", "금", "토", "일"];
+
+  const formatToTimeStr = (minutes) => {
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    if (h === 0) return `${m}분`;
+    if (m === 0) return `${h}시간`;
+    return `${h}시간 ${m}분`;
+  };
+
+  const sortedWeeklyData = [...weeklyData]
+    .map((d) => ({
+      ...d,
+      label: formatToTimeStr(d.time),
+    }))
+    .sort((a, b) => dayOrder.indexOf(a.name) - dayOrder.indexOf(b.name));
 
   const formatTime = (minutes) => {
     if (isNaN(minutes)) return "0h 0m";
@@ -74,16 +94,37 @@ const StatisticsPage3 = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
-      const visitList = data.visits || [];
+      const apiVisits = data.visits || [];
 
-      if (visitList.length === 0) return;
+      // ✅ 더미 데이터도 같이 포함
+      const dummyVisits = mockVisitorData
+        .map((v) => ({
+          ...v,
+          cctvId: getCctvId(selectedCCTV),
+          durationMinutes: v.duration_minutes,
+        }))
+        .filter((v) => {
+          const inDate = new Date(v.in);
+          return (
+            inDate >= new Date(`${startDate}T${startTime}`) &&
+            inDate <= new Date(`${endDate}T${endTime}`) &&
+            v.out !== null
+          );
+        });
+
+      const combinedVisits = [...apiVisits, ...dummyVisits];
+      console.log("📊 초기 병합된 방문자 수:", combinedVisits.length);
+
+      if (combinedVisits.length === 0) return;
 
       const dailyMap = {};
-      visitList.forEach(v => {
+      combinedVisits.forEach(v => {
+        if (v.out == null) return;
         const date = new Date(v.in).toISOString().split("T")[0];
         if (!dailyMap[date]) dailyMap[date] = [];
         dailyMap[date].push(v.durationMinutes);
       });
+
       const dailyAverages = Object.values(dailyMap).map(list =>
         list.length ? list.reduce((a, b) => a + b, 0) / list.length : 0
       );
@@ -93,7 +134,8 @@ const StatisticsPage3 = () => {
       setDailyAvg(avg);
 
       const dayMap = {};
-      visitList.forEach(v => {
+      combinedVisits.forEach(v => {
+        if (v.out == null) return;
         const day = new Date(v.in).toLocaleDateString("ko-KR", { weekday: "short" });
         if (!dayMap[day]) dayMap[day] = [];
         dayMap[day].push(v.durationMinutes);
@@ -108,10 +150,12 @@ const StatisticsPage3 = () => {
     }
   };
 
+
   const handleConfirm = async () => {
     setIsConfirmed(true);
     const token = localStorage.getItem("token");
     const cctvId = getCctvId(selectedCCTV);
+
     const params = new URLSearchParams({
       startDate,
       endDate,
@@ -125,9 +169,28 @@ const StatisticsPage3 = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
-      const visitList = data.visits || [];
+      const apiVisits = data.visits || [];
 
-      if (visitList.length === 0) {
+      // 📌 mock 데이터 필터링 (선택된 CCTV, 날짜 조건 일치)
+      const dummyVisits = mockVisitorData
+        .map((v) => ({
+          ...v,
+          cctvId: getCctvId(selectedCCTV),
+          durationMinutes: v.duration_minutes,
+        }))
+        .filter((v) => {
+          const inDate = new Date(v.in);
+          return (
+            inDate >= new Date(`${startDate}T${startTime}`) &&
+            inDate <= new Date(`${endDate}T${endTime}`) &&
+            v.out !== null
+          );
+        });
+      const combinedVisits = [...apiVisits, ...dummyVisits];
+      console.log("✅ 병합된 방문자 수:", combinedVisits.length);
+      console.log("✅ 병합된 방문자 샘플:", combinedVisits.slice(0, 3));
+
+      if (combinedVisits.length === 0) {
         setNoData(true);
         setDailyChartData([]);
         return;
@@ -137,7 +200,8 @@ const StatisticsPage3 = () => {
 
       const dateRange = getDateRange(startDate, endDate);
       const durationMap = {}, countMap = {};
-      visitList.forEach(v => {
+      combinedVisits.forEach(v => {
+        if (v.out == null) return;
         const dateKey = new Date(v.in).toISOString().split("T")[0];
         if (!durationMap[dateKey]) {
           durationMap[dateKey] = 0;
@@ -146,11 +210,22 @@ const StatisticsPage3 = () => {
         durationMap[dateKey] += v.durationMinutes;
         countMap[dateKey] += 1;
       });
+
       const dailyData = dateRange.map(date => ({
         name: date.slice(5),
         value: countMap[date] ? Math.round(durationMap[date] / countMap[date]) : 0
       }));
+
       setDailyChartData(dailyData);
+
+      const allDailyAverages = Object.keys(durationMap).map(
+        date => durationMap[date] / countMap[date]
+      );
+      const updatedAvg = allDailyAverages.length
+        ? Math.round(allDailyAverages.reduce((a, b) => a + b, 0) / allDailyAverages.length)
+        : 0;
+      setDailyAvg(updatedAvg);
+
     } catch (err) {
       console.error("조건 검색 API 오류", err);
     }
@@ -217,10 +292,7 @@ const StatisticsPage3 = () => {
                   {/* 날짜 선택 필터 */}
                   <div style={{ width: "80%", display: "flex", justifyContent: "space-between", marginBottom: "30px" }}>
                     <select onChange={(e) => setSelectedCCTV(e.target.value)} value={selectedCCTV} style={{ padding: "10px", borderRadius: "5px", width: "15%" }}>
-                      <option value="CCTV1">CCTV1</option>
-                      <option value="CCTV2">CCTV2</option>
-                      <option value="CCTV3">CCTV3</option>
-                      <option value="CCTV4">CCTV4</option>
+                      <option value="CCTV1">주차장</option>
                     </select>
                     <div style={{ display: "flex", justifyContent: "space-between", width: "70%" }}>
                       <div>
@@ -246,7 +318,7 @@ const StatisticsPage3 = () => {
                         <ResponsiveContainer width="100%" height={350}>
                           <BarChart
                             data={dailyChartData}
-                            margin={{ top: 40, right: 30, left: 20, bottom: 50 }}
+                            margin={{ top: 40, right: 80, left: 20, bottom: 50 }}
                           >
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis
@@ -258,7 +330,19 @@ const StatisticsPage3 = () => {
                             <YAxis unit="분" />
                             <Tooltip formatter={(value) => [`${value}분`, "평균 체류시간"]} />
                             <Bar dataKey="value" fill="#4A5CFF" radius={[10, 10, 0, 0]} />
-                            <ReferenceLine y={dailyAvg} stroke="#FF4D4F" strokeWidth={2} strokeDasharray="4 4" label={{ value: `평균 ${formatTimeLabel(dailyAvg)}`, position: "top", fill: "#FF4D4F", fontSize: 12 }} />
+                            <ReferenceLine
+                              y={dailyAvg}
+                              stroke="#FF4D4F"
+                              strokeWidth={2}
+                              strokeDasharray="4 4"
+                              label={{
+                                value: `평균 ${formatTimeLabel(dailyAvg)}`,
+                                position: "right",   // 오른쪽 끝 바깥으로 라벨 위치
+                                fill: "#FF4D4F",
+                                fontSize: 12,
+                                offset: 10,          // 오른쪽으로 여유 공간(픽셀 단위)
+                              }}
+                            />
                           </BarChart>
                         </ResponsiveContainer>
                       </div>
@@ -276,14 +360,23 @@ const StatisticsPage3 = () => {
                         <div style={{ fontSize: "20px", fontWeight: "600", marginBottom: "20px" }}>요일별 평균 체류시간</div>
                         <ResponsiveContainer width="100%" height={300}>
                           <BarChart
-                            data={weeklyData}
+                            data={[...weeklyData].sort(
+                              (a, b) => dayOrder.indexOf(a.name) - dayOrder.indexOf(b.name)
+                            )}
                             margin={{ top: 40, right: 30, left: 20, bottom: 50 }}
                           >
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis dataKey="name" />
                             <YAxis unit="분" />
                             <Tooltip formatter={(value) => [`${value}분`, "평균 체류시간"]} />
-                            <Bar dataKey="time" fill="#4A5CFF" radius={[10, 10, 0, 0]} />
+                            <Bar dataKey="time" fill="#4A5CFF" radius={[10, 10, 0, 0]} barSize={35}>
+                              <LabelList
+                                dataKey="time"
+                                position="top"
+                                formatter={(value) => formatToTimeStr(value)}
+                                style={{ fill: "#333", fontSize: 12 }}
+                              />
+                            </Bar>
                           </BarChart>
                         </ResponsiveContainer>
                       </div>

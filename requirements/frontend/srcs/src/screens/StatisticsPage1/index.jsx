@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Bar } from "react-chartjs-2";
 import { IconOutlineShoppingCart1 } from "../../icons/IconOutlineShoppingCart1";
 import "../MainPage/style.css";
-
+import { visitorStats } from "../../data/visitorStats";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -17,6 +17,83 @@ import {
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const VisitorSummaryPage = () => {
+  const getVisitorData = async () => {
+    const cutoffDate = new Date("2025-05-21T00:00:00");
+    const sDate = new Date(`${startDate}T${startTime}`);
+    const eDate = new Date(`${endDate}T${endTime}`);
+
+    // 1. 두 날짜 모두 cutoffDate 이전이면 → 더미만
+    if (eDate < cutoffDate) {
+      console.log("📦 더미 데이터만 사용");
+      return visitorStats.filter((d) => {
+        const ts = new Date(d.timestamp);
+        return (
+          d.cctv === selectedCCTV &&
+          ts >= sDate &&
+          ts <= eDate
+        );
+      }).map((d) => ({
+        ...d,
+        direction: d.direction || "IN",
+      }));
+    }
+
+    // 2. 두 날짜 모두 cutoffDate 이후이면 → API만
+    if (sDate >= cutoffDate) {
+      console.log("🌐 API 데이터만 사용");
+      const token = localStorage.getItem("token");
+      const cctvId = selectedCCTV.replace("CCTV", "");
+      const params = new URLSearchParams({
+        startDate,
+        endDate,
+        startTime,
+        endTime,
+        cctvId,
+      });
+
+      const res = await fetch(`/api/person/records?${params}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return await res.json();
+    }
+
+    // 3. 범위가 겹치는 경우 → 더미 + API 병합
+    console.log("🔀 더미 + API 데이터 병합");
+
+    // 3-1 더미 필터링
+    const dummyFiltered = visitorStats.filter((d) => {
+      const ts = new Date(d.timestamp);
+      return (
+        d.cctv === selectedCCTV &&
+        ts >= sDate &&
+        ts < cutoffDate
+      );
+    }).map((d) => ({
+      ...d,
+      direction: d.direction || "IN",
+    }));
+
+    // 3-2 API 호출
+    const token = localStorage.getItem("token");
+    const cctvId = selectedCCTV.replace("CCTV", "");
+    const params = new URLSearchParams({
+      startDate: cutoffDate.toISOString().split("T")[0],
+      endDate,
+      startTime,
+      endTime,
+      cctvId,
+    });
+
+    const res = await fetch(`/api/person/records?${params}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    const apiData = await res.json();
+
+    // 3-3 병합 후 반환
+    return [...dummyFiltered, ...apiData];
+  };
+  
   const navigate = useNavigate();
   const location = useLocation();
   const isCCTV = location.pathname === "/cctv";
@@ -29,7 +106,7 @@ const VisitorSummaryPage = () => {
   const [endDate, setEndDate] = useState(today.toISOString().split("T")[0]);
   const [startTime, setStartTime] = useState("00:00");
   const [endTime, setEndTime] = useState("23:59");
-  const [selectedCCTV, setSelectedCCTV] = useState("CCTV1");
+  const [selectedCCTV, setSelectedCCTV] = useState("CCTV2");
 
   const [showDefaultCharts, setShowDefaultCharts] = useState(true);
   const [monthlyChartData, setMonthlyChartData] = useState(null);
@@ -50,24 +127,11 @@ const VisitorSummaryPage = () => {
   };
 
   const fetchAndSetDefaultCharts = async () => {
-    const token = localStorage.getItem("token");
-    const cctvId = selectedCCTV.replace("CCTV", "");
-    const params = new URLSearchParams({
-      startDate,
-      endDate,
-      startTime: "00:00",
-      endTime: "23:59",
-      cctvId,
-    });
-
-    const res = await fetch(`/api/person/records?${params}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const data = await res.json();
-
+    const data = await getVisitorData();
+    console.log("📦 기본 차트 데이터:", data);
     const dateRange = getDateRange(startDate, endDate);
     const dailyCounts = {};
-    data.filter(d => d.direction === "in").forEach(({ timestamp }) => {
+    data.filter(d => d.direction === "IN").forEach(({ timestamp }) => {
       const dateKey = new Date(timestamp).toISOString().split("T")[0];
       dailyCounts[dateKey] = (dailyCounts[dateKey] || 0) + 1;
     });
@@ -86,7 +150,7 @@ const VisitorSummaryPage = () => {
       const dateStr = date.toISOString().split("T")[0];
       const hour = date.getHours();
       if (dateStr === todayStr) {
-        direction === "in" ? inPerHour[hour]++ : outPerHour[hour]++;
+        direction === "IN" ? inPerHour[hour]++ : outPerHour[hour]++;
       }
     });
     setInOutChartData({
@@ -99,14 +163,8 @@ const VisitorSummaryPage = () => {
   };
 
   const handleDateTimeChange = async () => {
-    const token = localStorage.getItem("token");
-    const cctvId = selectedCCTV.replace("CCTV", "");
-    const params = new URLSearchParams({ startDate, endDate, startTime, endTime, cctvId });
-    const res = await fetch(`/api/person/records?${params}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    const data = await res.json();
-
+    const data = await getVisitorData();
+    console.log("📦 확인 버튼 클릭 시 데이터:", data);
     const maleIn = Array(24).fill(0), maleOut = Array(24).fill(0);
     const femaleIn = Array(24).fill(0), femaleOut = Array(24).fill(0);
 
@@ -124,11 +182,11 @@ const VisitorSummaryPage = () => {
     data.forEach(({ timestamp, direction, gender }) => {
       const date = new Date(timestamp);
       const day = date.getDay(), hour = date.getHours();
-      if (direction === "in") {
+      if (direction === "IN") {
         weekdaySums[day]++;
         hourSums[hour]++;
         gender === "male" ? maleIn[hour]++ : gender === "female" && femaleIn[hour]++;
-      } else if (direction === "out") {
+      } else if (direction === "OUT") {
         gender === "male" ? maleOut[hour]++ : gender === "female" && femaleOut[hour]++;
       }
     });
@@ -156,7 +214,7 @@ const VisitorSummaryPage = () => {
     const labels = Array.from({ length: 24 }, (_, i) => `${i}시`);
     setWeekdayChartData({
       labels: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
-      datasets: [{ label: "요일별 평균 방문자 수", data: weekdayAverages, backgroundColor: "#5D5FEF" }],
+      datasets: [{ label: "요일별 평균 방문자 수", data: weekdayAverages, backgroundColor: "#5D5FEF", barThickness: 35, borderRadius: 10 }],
     });
     setHourlyChartData({
       labels,
@@ -178,12 +236,14 @@ const VisitorSummaryPage = () => {
         ],
       },
     });
+
     setShowDefaultCharts(false);
   };
 
   useEffect(() => {
     fetchAndSetDefaultCharts();
   }, [selectedCCTV]);
+
 
   return (
     <div className="main-screen">
@@ -233,10 +293,8 @@ const VisitorSummaryPage = () => {
                   {/* 날짜/시간 필터 */}
                   <div style={{ display: "flex", justifyContent: "space-between", width: "80%", marginBottom: "20px" }}>
                     <select onChange={(e) => setSelectedCCTV(e.target.value)} value={selectedCCTV} style={{ padding: "10px", borderRadius: "5px", width: "15%" }}>
-                      <option value="CCTV1">CCTV1</option>
-                      <option value="CCTV2">CCTV2</option>
-                      <option value="CCTV3">CCTV3</option>
-                      <option value="CCTV4">CCTV4</option>
+                      <option value="CCTV3">매장입구</option>
+                      <option value="CCTV2">2층입구</option>
                     </select>
                     <div style={{ display: "flex", justifyContent: "space-between", width: "65%" }}>
                       <div>
@@ -305,7 +363,9 @@ const VisitorSummaryPage = () => {
                                 y: {
                                   stacked: true,
                                   beginAtZero: true,
-                                  ticks: { callback: v => Math.abs(v) },
+                                  ticks: {
+                                    callback: (v) => Number(v).toFixed(3),
+                                  },
                                 },
                               },
                             }}
@@ -325,7 +385,9 @@ const VisitorSummaryPage = () => {
                                 y: {
                                   stacked: true,
                                   beginAtZero: true,
-                                  ticks: { callback: v => Math.abs(v) },
+                                  ticks: {
+                                    callback: (v) => Number(v).toFixed(3),
+                                  },
                                 },
                               },
                             }}
