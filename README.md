@@ -12,3 +12,4 @@ make 하면 빌드 후 컨테이너는 계속 실행되고 있고 make clean 시
 
 1. docker ps -a : 실행 중인 컨테이너 확인 (컨테이너 ID랑 정상 실행 중인지 등 확인 가능)
 2. docker logs [container ID] : 실행 중인 컨테이너 로그 확인 ([] 부분은 실제 컨테이너 ID 넣어야 함)
+
