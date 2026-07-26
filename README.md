@@ -1,15 +1,57 @@
+### AI를 활용한 CCTV 기반 매장 고객관리 플랫폼 | 다보아
+
+**다보아** 는 YOLO 기반 객체 탐지와 OCR을 활용하여 CCTV 영상으로부터 차량 및 고객 정보를 분석하고, 관리자에게 통계 데이터와 영상 관리 기능을 제공하는 AI 기반 CCTV 분석 플랫폼입니다.
+
 ![컴공2분반_8조_포스터_AI를 활용한 CCTV 기반 매장 고객관리 플랫폼_다보아](https://github.com/user-attachments/assets/a6530e1f-946b-47cb-a793-021cd4417e75)
 
-## Makefile 사용법
-1. make : 빌드
-2. make up : 재빌드
-3. make down : 실행 중인 컨테이너 모두 종료
-4. make clean : 실행 중인 컨테이너 모두 종료 및 이미지 파일 삭제
+<br>
 
-## Docker 사용법
-Docker는 경량화된 가상 머신이라고 보면 됩니다. 빌드 하면 도커 이미지(버전 등이 기록됨)를 만들고 그 이미지로 컨테이너 (실행하려는 서비스 하나)를 실행시킵니다.
-make 하면 빌드 후 컨테이너는 계속 실행되고 있고 make clean 시 컨테이너가 종료됩니다.
+### 목차
 
-1. docker ps -a : 실행 중인 컨테이너 확인 (컨테이너 ID랑 정상 실행 중인지 등 확인 가능)
-2. docker logs [container ID] : 실행 중인 컨테이너 로그 확인 ([] 부분은 실제 컨테이너 ID 넣어야 함)
+1. 개요
+2. 기술스택
+3. 시스템 아키텍처
+4. 주요기능 소개 및 설명
+5. 서비스 화면
+6. 기여자
 
+<hr>
+
+### 1) 개요
+
+> 전통적인 대형마트 성장세의 둔화
+<img width="986" height="412" alt="이미지1" src="https://github.com/user-attachments/assets/34f56dc0-337e-46b8-a1bf-94b0170b9eb6" />
+
+편리한 모바일 쇼핑, 빠른 배송, 비교적 저렴한 가격 등으로 인해 소비자들은 점점 온라인 플랫 폼으로 이동하고 있으며 이로 인해 오프라인 매장의 고객 유입은 지속적으로 감소하고 있습니다. 실제로 대형마트, 백화점, 쇼핑몰 등 오프라인 유통채널은 객수와 매출 모두 정체 또는 감소세를 보이고 있으며, 특히 코로나19 이후에는 이러한 흐름이 구조적 변화로 자리잡았습니다.
+
+<br>
+
+> 생존을 위한 디지털 전환의 필요성
+
+단순히 제품을 진열하고 판매하는 공간을 넘어, 고객을 이해하고, 분석하고, 맞춤형 경험을 제공 하는 공간으로 전환해야 합니다. 하지만 대부분의 오프라인 매장은 실제 방문 고객의 성별, 연령대, 체류 시간, 재방문률과 같은핵심 정보를 파악하기 힘들며 이는 오프라인 매장 특성상 뚜렷한 단점으로 작용하여 온라인 플랫폼과의 정보 비대칭을 심화시킬수 있습니다. 본 프로젝트는 기존 CCTV를 단순 보안 목적이 아닌, A를 통해 고객의 출입, 성별, 연령대, 차량 정보 등을 통합적으로 자동 분석하고, 이를 기반으로 고객 흐름 및 특성, 체류 시간, 시간대별 방문 추이 등을 데이터 기반으로 시각화하고 전략화할 수 있는 플랫폼을 개발하여 오프라인 매장의 생존 및 발전에 기여하고 더 나아가 지역사회 발전에 도움을 주고자 합니다.
+
+<hr>
+
+### 2) 기술스택
+
+| 구분 | 주요 기술 및 도구 | 세부 내용 |
+| :--- | :--- | :--- |
+| **AI** | **Language & Framework** | Python 10.x, PyTorch, PaddlePaddle |
+| | **Vision & Tracking** | YOLO (Ultralytics), OpenCV, ByteTracker |
+| | **Model & OCR** | EfficientNet, ResNet, PaddleOCR (v2.7x) |
+| | **GPU Environment** | CUDA 11.x, cuDNN 9.8 |
+| **Frontend** | **Framework & Library** | React.js, Chart.js |
+| | **Styling & Web Server** | CSS, Nginx |
+| **Backend** | **Language & Framework** | Java 17+, Spring Boot 3.x |
+| | **Database** | MySQL |
+| | **Media & Communication**| FFmpeg, WebSocket |
+| **Infra** | **Container & OS** | Docker, Linux |
+| | **AWS Cloud** | EC2, RDS, S3 |
+
+<hr>
+
+### 3) 시스템 아키텍처
+<img width="1354" height="516" alt="시스템 아키텍처" src="https://github.com/user-attachments/assets/ef74f8de-9179-432d-a6c8-baa8c28d7094" />
+
+(시스템 파이프라인 설명)
+<hr>
