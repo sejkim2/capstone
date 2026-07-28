@@ -262,13 +262,38 @@ React는
 
 ## 로그인/회원가입 페이지
 
+<img width="1352" height="574" alt="로그인 페이지" src="https://github.com/user-attachments/assets/10874f51-1b20-4bf9-8e53-8db5d9df01b6" />
+
+* 사용자 아이디와 비밀번호를 입력하여 로그인 하고 메인 대시보드로 이동
+* 회원가입 버튼을 통해 새로운 계정을 생성 (이메일 요구)
+
 ## 메인 대시보드
+
+<img width="1540" height="1093" alt="방문자 통계" src="https://github.com/user-attachments/assets/9a155d0c-f144-4e5a-8207-130ceedfd095" />
+
+* 주요 기능 메뉴가 제공되는 메인 페이지
+* 로그아웃 버튼을 클릭하여 로그인 페이지로 즉시 이동, 사용자 인증 정보 초기화
 
 ## 구역별 방문객 통계 페이지1
 
+<img width="1309" height="921" alt="사진3" src="https://github.com/user-attachments/assets/749f3eae-8e5a-45d2-8c15-93957543c45b" />
+
+* 구역별 방문자 통계를 시각화하여 제공
+* 월간 방문자 수 통계는 IN 방향의 데이터만 필터링, 30일 전부터 오늘까지의 일별 방문자 수를 표시
+* 일간 유출입 통계는 오늘 하루의 IN, OUT 데이터를 기준으로 시간대별 유입/유출 현황을 시각적으로 표현
+
+<img width="1531" height="543" alt="그림4" src="https://github.com/user-attachments/assets/83b32ee9-71bd-432c-95a9-99f94a85983f" />
+
+* 지정된 기간의 방문자 수를 확인
+* 요일별 방문자 수와 시간대별 방문자 수를 막대 그래프로 확인
+* 하단에 유입자/유출자를 성별로 나누어 시각화
+
 ## 구역별 방문객 통계 페이지2
+(그림)
+* 
 
 ## 고객 체류시간 페이지
+* 
 
 ## 재방문률 페이지
 
