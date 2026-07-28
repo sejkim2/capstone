@@ -10,10 +10,11 @@
 
 1. [개요](#1-개요)
 2. [기술스택](#2-기술스택)
-3. [시스템 아키텍처 및 흐름](#3-시스템-아키텍처-및-흐름)
-4. [주요기능 소개](#4-주요기능-소개)
-5. [기대효과](#5-기대효과)
-6. [기여자](#6-기여자)
+3. [모델](#3-모델)
+4. [시스템 아키텍처 및 흐름](#4-시스템-아키텍처-및-흐름)
+5. [주요기능 소개](#5-주요기능-소개)
+6. [기대효과](#6-기대효과)
+7. [기여자](#7-기여자)
 
 <hr>
 
@@ -50,7 +51,106 @@
 
 <hr>
 
-### 3) 시스템 아키텍처 및 흐름
+### 3) 모델
+
+본 프로젝트는 **실시간 CCTV 영상 분석 시스템**으로, 객체 탐지(Object Detection), 객체 추적(Multi Object Tracking), 문자 인식(OCR), 이미지 분류(Classification), 얼굴 기반 나이 추정을 조합하여 고객 및 차량 정보를 분석합니다.
+
+## Object Detection - YOLOv8
+
+객체 탐지 모델로 **YOLOv8**을 사용했습니다.
+
+YOLOv8은 Anchor-Free 구조를 채택하여 기존 Anchor 기반 모델의 복잡한 하이퍼파라미터와 높은 계산량 문제를 개선하였으며, 실시간 환경에서도 높은 정확도와 빠른 추론 속도를 제공합니다. 또한 Nano(n), Small(s), Medium(m), Large(l) 등 다양한 모델 크기를 제공하여 제한된 GPU 자원에서도 효율적으로 사용할 수 있습니다.
+
+## 적용 모델
+
+- **Person Detection** : YOLOv8 (COCO Pretrained)
+- **Vehicle Detection** : YOLOv8 (COCO Pretrained)
+- **License Plate Detection** : Custom YOLOv8s
+- **Face Detection** : YOLOv8 Face
+
+번호판은 영상 전체에서 직접 탐지하지 않고, **차량을 먼저 탐지한 후 차량 영역에서 번호판을 탐지**하도록 설계하여 작은 번호판에 대한 탐지 성능을 향상시켰습니다.
+
+---
+
+## Optical Character Recognition (OCR) - PaddleOCR
+
+번호판 문자 인식을 위해 **PaddleOCR**를 사용했습니다.
+
+PaddleOCR은 Text Detection과 Text Recognition이 분리된 구조를 가지며, 다양한 환경에서 높은 문자 인식 성능을 제공합니다. 또한 MobileNetV3 기반의 경량 모델(PP-OCRv4)을 지원하여 실시간 CCTV 환경에 적합합니다.
+
+## 적용 모델
+
+- **Text Detection** : PP-OCRv4_det
+- **Text Recognition** : PP-OCRv4_rec
+
+초기에는 AI Hub 번호판 데이터셋으로 Recognition 모델을 직접 학습했지만, 사전학습된 PP-OCRv4 모델과 성능 차이가 크지 않았으며 실제 환경에서 더 높은 강건성(Robustness)을 보여 최종적으로 사전학습 모델을 적용했습니다.
+
+---
+
+## Gender Classification - EfficientNet-B4
+
+고객의 전신 이미지를 입력으로 받아 성별을 분류하기 위해 **EfficientNet-B4**를 사용했습니다.
+
+PA-100K 데이터셋과 추가 전처리된 보행자 데이터를 활용하여 학습하였으며, 이미지 비율을 유지하는 Padding과 최소한의 데이터 증강을 적용하여 사람의 형태 정보를 최대한 보존하도록 설계했습니다.
+
+## Result
+
+- Test Accuracy : **92.1%**
+
+---
+
+## Age Classification
+
+연령대 분석은 CCTV 설치 환경에 따라 두 가지 방식을 사용합니다.
+
+## 1. Body-based Age Classification
+
+전신 이미지를 입력으로 하는 **EfficientNet-B3** 모델을 사용하여 다음 세 가지 연령대로 분류합니다.
+
+- Under 18
+- 18 ~ 60
+- Over 60
+
+전신 이미지만으로는 경계 연령(18세, 60세 부근)의 구분이 어려워 정확도에 한계가 있었습니다.
+
+## 2. Face-based Age Estimation
+
+얼굴이 충분히 촬영되는 CCTV에서는
+
+- YOLOv8 Face
+- ResNet50 기반 Facial Age Estimation
+
+모델을 사용하여 얼굴의 나이를 추정합니다.
+
+출입이 판단된 이후 연속 **15프레임**의 얼굴 이미지를 분석하고 평균값을 최종 나이로 사용하여 단일 프레임보다 안정적인 예측 결과를 얻도록 설계했습니다.
+
+---
+
+## Multi Object Tracking - ByteTrack
+
+객체 추적에는 **ByteTrack**을 사용했습니다.
+
+ByteTrack은 Kalman Filter와 IoU 기반의 데이터 연관(Data Association)을 이용하여 객체마다 고유 ID를 유지하며 실시간 추적을 수행합니다.
+
+이를 통해 다음 기능을 구현했습니다.
+
+- 객체별 ID 유지
+- 고객 출입 판단
+- 차량 출입 판단
+- 객체별 AI 분석 결과 관리
+
+---
+
+# AI Pipeline
+
+<img width="1020" height="623" alt="9" src="https://github.com/user-attachments/assets/4524b0d6-382e-45cd-9483-5b640dfdac26" />
+
+실시간 성능을 위해 동일 프레임에서 검출된 차량과 고객 이미지를 **Batch Tensor**로 묶어 추론을 수행하여 GPU 활용률을 높이고 추론 시간을 최소화했습니다.
+
+<br>
+<hr>
+
+### 4) 시스템 아키텍처 및 흐름
 <img width="1354" height="516" alt="시스템 아키텍처" src="https://github.com/user-attachments/assets/ef74f8de-9179-432d-a6c8-baa8c28d7094" />
 
 ## 1. CCTV 영상 수집 및 스트리밍
@@ -263,7 +363,7 @@ React는
 
 <hr>
 
-### 4) 주요기능 소개
+### 5) 주요기능 소개
 
 ## 로그인/회원가입 페이지
 
@@ -370,7 +470,7 @@ React는
 <br>
 <hr>
 
-### 5) 기대효과
+### 6) 기대효과
 
 > 매장 운영 및 효율성 향상
 
@@ -391,7 +491,7 @@ React는
 <br>
 <hr>
 
-### 6) 기여자
+### 7) 기여자
 
 | 이름 | 역할 | 담당 분야 |
 | :---: | :---: | :--- |
